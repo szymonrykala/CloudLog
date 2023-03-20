@@ -8,6 +8,7 @@ packages = [{include = "save_logs"}]
 
 [tool.poetry.dependencies]
 python = "^3.10"
+cloudlog-commons = {path = "/home/szymon/Projects/CloudLog/cloudlog_commons", develop = true}
 
 
 [build-system]

@@ -5,8 +5,12 @@ build
 temp*
 cache
 
-/cloudlog_commons/python
 credentials
+
+/cloudlog_commons/python/*
+
+__pycache__/
+
 .terraform*
 *.tfstate
 *.backup
