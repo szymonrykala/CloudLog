@@ -1,7 +1,29 @@
 
 
+data "aws_iam_policy_document" "allow_hosting_access" {
+  statement {
+    principals {
+      type        = "*"
+      identifiers = ["*"]
+    }
+
+    actions = [
+      "s3:GetObject"
+    ]
+
+    resources = [
+      "${aws_s3_bucket.app_hosting.arn}/*"
+    ]
+  }
+}
+
 resource "aws_s3_bucket" "app_hosting" {
   bucket = local.frontend.url
+}
+
+resource "aws_s3_bucket_policy" "allow_hosting_access_policy" {
+  bucket = aws_s3_bucket.app_hosting.id
+  policy = data.aws_iam_policy_document.allow_hosting_access.json
 }
 
 resource "aws_s3_bucket_acl" "example_bucket_acl" {

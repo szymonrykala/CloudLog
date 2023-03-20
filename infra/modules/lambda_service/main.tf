@@ -58,7 +58,7 @@ data "archive_file" "lambda" {
   type        = "zip"
   source_dir  = var.source_code
   output_path = "${var.source_code}.zip"
-  excludes = var.excludes
+  excludes    = var.excludes
 }
 
 resource "aws_lambda_function" "lambda" {

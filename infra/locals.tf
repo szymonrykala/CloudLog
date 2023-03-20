@@ -15,17 +15,17 @@ locals {
 
   lambda = {
     handler = "main.handler"
-    
+
     read_lambda = {
       source = "../lambda/read_logs/read_logs"
     }
-    
+
     save_lambda = {
       source = "../lambda/save_logs/save_logs"
     }
 
     common_layer = {
-      name = "cloudlog_commons"
+      name   = "cloudlog_commons"
       source = "../cloudlog_commons"
     }
   }

@@ -15,8 +15,8 @@ variable "handler" {
 
 variable "excludes" {
   description = "list of zip excluded files"
-  type = list(string)
-  default = []
+  type        = list(string)
+  default     = []
 }
 
 variable "layers" {
