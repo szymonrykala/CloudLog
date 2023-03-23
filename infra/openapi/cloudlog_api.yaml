@@ -1,0 +1,189 @@
+openapi: 3.0.0
+info:
+  description: CLoudLog api definition
+  version: "1.0.1"
+  title: CloudLog
+  contact:
+    email: szymonrykala@gmail.com
+
+paths:
+  /logs:
+    get:
+      tags:
+        - logs
+      parameters:
+        - $ref: "#/components/parameters/fromTime"
+        - $ref: "#/components/parameters/toTime"
+        - $ref: "#/components/parameters/host"
+        - $ref: "#/components/parameters/logType"
+        - $ref: "#/components/parameters/loggingEntity"
+        - $ref: "#/components/parameters/severity"
+      x-amazon-apigateway-integration:
+        httpMethod: GET
+        payloadFormatVersion: 1.0
+        type: HTTP_PROXY
+      responses:
+        "200":
+          description: users list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  allOf:
+                    - type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                          example: 35t4d6y4g56
+                    - $ref: "#/components/schemas/LogItem"
+
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        default:
+          description: thrown HTTP error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    put:
+      tags:
+        - logs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/LogItem"
+
+      x-amazon-apigateway-integration:
+        httpMethod: POST
+        payloadFormatVersion: 1.0
+        type: HTTP_PROXY
+      responses:
+        "200":
+          description: logs saved
+        "403":
+          $ref: "#/components/responses/UnauthorizedError"
+        default:
+          description: thrown HTTP error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+components:
+  parameters:
+    fromTime:
+      in: query
+      name: from
+      description: datetime to search from
+      required: False
+      schema:
+        type: string
+        example: 2023-09-21T12:00:00
+
+    toTime:
+      in: query
+      name: to
+      description: end datetime to search to
+      required: False
+      schema:
+        type: string
+        example: 2023-09-21T12:00:00
+
+    logType:
+      in: query
+      name: type
+      description: type of log
+      required: False
+      schema:
+        type: string
+        enum: [user, system, hardware, logger]
+        example: user
+
+    loggingEntity:
+      in: query
+      name: service
+      description: service, app that logged
+      required: False
+      schema:
+        type: string
+        example: windows-update
+
+    host:
+      in: query
+      name: hostname
+      description: log host machine
+      required: False
+      schema:
+        type: string
+        example: lenovo-xyz900
+
+    severity:
+      in: query
+      name: severity
+      description: severity level of the log
+      required: False
+      schema:
+        type: number
+        enum: [1, 2, 3, 4, 5, 6]
+        example: 1
+
+  schemas:
+    LogItem:
+      type: object
+      properties:
+        os:
+          type: string
+          enum: [Windows, Linux]
+        timestamp:
+          type: number
+          example: 1675557738587889
+        severity:
+          type: number
+          enum: [0, 1, 2, 3, 4, 5, 6]
+          example: 1
+        message:
+          type: string
+          example: unable to update icon for discord1
+        type:
+          type: string
+          enum: [Application, System, CloudLogger]
+          example: Application
+        hostname:
+          type: string
+          example: user-laptop
+        raw:
+          type: string
+          example: log example that I have not
+        unit:
+          type: string
+          example: /snap/postman/184/usr/share/postman
+
+    # HTTP ERRORS
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+          description: meningfull error explonation
+          example: Required entity does not exist
+
+  responses:
+    LogsResponse:
+      description: successfull response with array of logs
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                log:
+                  $ref: "#/components/schemas/LogItem"
+
+    UnauthorizedError:
+      description: Access token is missing or invalid
