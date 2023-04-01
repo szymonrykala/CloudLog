@@ -23,7 +23,7 @@ Logs agregation system built on top of AWS
 | timestamp | TimeCreated   | __REALTIME_TIMESTAMP                                     |
 | hostname  | MachineName   | _HOSTNAME                                                |
 | unit      | ProviderName  | _EXE                                                     |
-| type  | ContainerName | `Application` if ("opt" or "snap") in _EXE else `System` |
+| type      | ContainerName | `Application` if ("opt" or "snap") in _EXE else `System` |
 | raw       | *             | *                                                        |
 
 ## AWS
@@ -47,5 +47,5 @@ Database build on AWS DynamoDB
 | timestamp | number | unix timestamp                   | *1675557738587889*                    |
 | hostname  | string | ---                              | *szymon-latitude*                     |
 | unit      | string | ---                              | */snap/postman/184/usr/share/postman* |
-| type  | string | (Application,System,CloudLogger) | *Application*                         |
-| raw       | string | *                                | *<raw log fetched from system>*       |
+| type      | string | (Application,System,CloudLogger) | *Application*                         |
+| raw       | string | *                                | *raw log fetched from system*         |
