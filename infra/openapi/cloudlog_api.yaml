@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   description: CLoudLog api definition
-  version: "1.0.1"
+  version: "1.0.2"
   title: CloudLog
   contact:
     email: szymonrykala@gmail.com
@@ -18,10 +18,15 @@ paths:
         - $ref: "#/components/parameters/logType"
         - $ref: "#/components/parameters/loggingEntity"
         - $ref: "#/components/parameters/severity"
+      x-amazon-apigateway-request-validator: full-request-validation
       x-amazon-apigateway-integration:
-        httpMethod: GET
-        payloadFormatVersion: 1.0
-        type: HTTP_PROXY
+        httpMethod: POST
+        contentHandling: CONVERT_TO_TEXT
+        passthroughBehavior": when_no_templates
+        type: "AWS_PROXY"
+        credentials: ${gateway_iam_role}
+        uri: arn:aws:apigateway:${region}:lambda:path/2015-03-31/functions/${get_logs_arn}/invocations
+  
       responses:
         "200":
           description: users list
@@ -30,23 +35,9 @@ paths:
               schema:
                 type: array
                 items:
-                  allOf:
-                    - type: object
-                      properties:
-                        id:
-                          type: string
-                          format: uuid
-                          example: 35t4d6y4g56
-                    - $ref: "#/components/schemas/LogItem"
+                  $ref: "#/components/schemas/DBLogItem"
 
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        default:
-          description: thrown HTTP error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+
     put:
       tags:
         - logs
@@ -57,22 +48,41 @@ paths:
               type: array
               items:
                 $ref: "#/components/schemas/LogItem"
-
+      x-amazon-apigateway-request-validator: full-request-validation
       x-amazon-apigateway-integration:
+        type: AWS
         httpMethod: POST
-        payloadFormatVersion: 1.0
-        type: HTTP_PROXY
+        uri: arn:aws:apigateway:${region}:sqs:path/${account_id}/${logs_buffer_queue_name}
+        credentials: ${gateway_iam_role}
+        contentHandling: CONVERT_TO_TEXT
+        passthroughBehavior: "never"
+        requestParameters:
+          integration.request.header.Content-Type: "'application/x-www-form-urlencoded'"
+        requestTemplates:
+          application/json: "Action=SendMessage&MessageBody=$input.body"
+        responses:
+          default:
+            statusCode: 200
+            responseTemplates:
+              application/json: >
+                { "message": "message sent" }
+        
       responses:
         "200":
-          description: logs saved
-        "403":
-          $ref: "#/components/responses/UnauthorizedError"
-        default:
-          description: thrown HTTP error
+          description: logs sent
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                type: object
+                properties:
+                  message:
+                    type: string
+                    exmple: "message sent"
+
+x-amazon-apigateway-request-validators:
+  "full-request-validation":
+    validateRequestParameters: true
+    validateRequestBody: true
 
 components:
   parameters:
@@ -133,6 +143,16 @@ components:
         example: 1
 
   schemas:
+    DBLogItem:
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              example: 35t4d6y4g56
+        - $ref: "#/components/schemas/LogItem"
+
     LogItem:
       type: object
       properties:
@@ -162,15 +182,6 @@ components:
         unit:
           type: string
           example: /snap/postman/184/usr/share/postman
-
-    # HTTP ERRORS
-    Error:
-      type: object
-      properties:
-        message:
-          type: string
-          description: meningfull error explonation
-          example: Required entity does not exist
 
   responses:
     LogsResponse:
