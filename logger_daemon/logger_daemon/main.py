@@ -7,6 +7,7 @@ import requests
 import platform
 import json
 
+
 class LogWorker(threading.Thread):
     def __init__(self, num_logs, batch_size):
         super().__init__()
@@ -26,7 +27,7 @@ class LogWorker(threading.Thread):
         return logs
 
     def get_windows_logs(self, num_logs):
-        cmd = f'powershell -Command Get-WinEvent -FilterHashtable @{{logname=\'Application\',\'System\'; StartTime=(Get-Date).AddMinutes(-60)}} -MaxEvents {num_logs} | Select-Object @{{Name=\'TimeCreated\'; Expression={{(Get-Date $_.TimeCreated).ToString()}}}}, Level, Message, ProviderName, MachineName, ContainerName | ConvertTo-Json'
+        cmd = f'powershell -Command Get-WinEvent -FilterHashtable @{{logname=\'Application\',\'System\'; StartTime=(Get-Date).AddMinutes(-60)}} -MaxEvents {num_logs} | Select-Object @{{Name=\'TimeCreated\'; Expression={{(Get-Date $_.TimeCreated).ToString()}}}}, Level, Message, ProviderName, MachineName, ContainerLog | ConvertTo-Json'
         output = subprocess.check_output(cmd, encoding='utf-8', errors='replace')
         logs = json.loads(output)
         result = []
@@ -38,7 +39,7 @@ class LogWorker(threading.Thread):
                 'timestamp': log['TimeCreated'],
                 'hostname': log['MachineName'],
                 'unit': log['ProviderName'],
-                'type': log['ContainerName'],
+                'type': log['ContainerLog'],
                 'raw': log
             })
         return result
@@ -51,12 +52,11 @@ class LogWorker(threading.Thread):
 
     def run(self):
         while not self.stopped:
-            logs = self.get_logs()
             batch = []
             for _ in range(self.batch_size):
                 batch.append(self.get_logs())
+                time.sleep(10)
             log_queue.put(batch)
-            time.sleep(10)
 
 
 class LogSender(threading.Thread):
@@ -88,7 +88,7 @@ class LogSender(threading.Thread):
 
 if __name__ == '__main__':
     num_logs = 10
-    batch_size = 2 # how many times it gets logs eg. if num_log = 10 and batch_size = 2 then 20 logs will be sent
+    batch_size = 2  # how many times it gets logs eg. if num_log = 10 and batch_size = 2 then 20 logs will be sent
     endpoint = "http://localhost:5000/logs"
 
     log_queue = queue.Queue()
