@@ -55,7 +55,7 @@ class LogWorker(threading.Thread):
         return result
 
     def get_linux_logs(self):
-        cmd = f'journalctl --lines={self.num_logs} --since="-{self.time_in_minutes} min ago" --output=json | jq \'.[] | {{os: "Linux", severity: .PRIORITY, message: .MESSAGE, timestamp: (.__REALTIME_TIMESTAMP / 1000000 | floor), hostname: ._HOSTNAME, unit: ._SYSTEMD_UNIT, type: ._EXE, raw: .}}\''
+        cmd = f'journalctl --lines={self.num_logs} --since="{self.time_in_minutes} min ago" --output=json | jq \'.[] | {{os: "Linux", severity: .PRIORITY, message: .MESSAGE, timestamp: (.__REALTIME_TIMESTAMP / 1000000 | floor), hostname: ._HOSTNAME, unit: ._SYSTEMD_UNIT, type: ._EXE, raw: .}}\''
         output = subprocess.check_output(cmd, encoding='utf-8', errors='replace', shell=True, executable="/bin/bash")
         logs = json.loads(output)
         result = []
