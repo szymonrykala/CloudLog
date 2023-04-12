@@ -8,7 +8,6 @@ import platform
 import json
 from cloudlog_commons import Log, OS, LogType
 
-
 class LogWorker(threading.Thread):
     def __init__(self, num_logs, batch_size, time_in_minutes):
         super().__init__()
