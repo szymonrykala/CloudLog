@@ -2,6 +2,7 @@
 resource "aws_api_gateway_rest_api" "cloudlog" {
   name        = "${local.project_name}-api"
   description = "HTTP REST api for ${local.project_name}"
+  api_key_source = "HEADER"
 
   body = templatefile("./openapi/cloudlog_api.yaml", {
     get_logs_arn           = module.read_logs_lambda.arn,
@@ -36,24 +37,30 @@ resource "aws_api_gateway_stage" "cloudlog_dev" {
 }
 
 
-
 data "aws_iam_policy_document" "cloudlog_api_policy_doc" {
   statement {
     effect = "Allow"
 
     principals {
       type        = "AWS"
-      identifiers = ["*"]
+      identifiers = [
+        "arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/developer"
+      ]
     }
 
-    actions   = ["lambda:Invoke"]
-    resources = [module.read_logs_lambda.arn]
+    actions   = ["execute-api:Invoke"]
+    resources = [
+      "arn:aws:execute-api:eu-central-1:${data.aws_caller_identity.current.account_id}:*"
+    ]
   }
 }
+
 resource "aws_api_gateway_rest_api_policy" "cloudlog_api_policy" {
   rest_api_id = aws_api_gateway_rest_api.cloudlog.id
   policy      = data.aws_iam_policy_document.cloudlog_api_policy_doc.json
 }
+
+
 
 resource "aws_iam_role" "gateway_role" {
   name = "${local.project_name}-gateway-role"

@@ -13,6 +13,13 @@ resource "aws_iam_role" "lambda_role" {
           Service = "lambda.amazonaws.com"
         }
       },
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "rds.amazonaws.com"
+        }
+      },
     ]
   })
 }
@@ -57,7 +64,7 @@ resource "aws_iam_role_policy_attachment" "user_policy_attachment" {
 data "archive_file" "lambda" {
   type        = "zip"
   source_dir  = var.source_code
-  output_path = "${var.source_code}.zip"
+  output_path = "../${var.source_code}.zip"
   excludes    = var.excludes
 }
 

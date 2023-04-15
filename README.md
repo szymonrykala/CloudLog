@@ -31,6 +31,22 @@ Logs agregation system built on top of AWS
 ### API
 defined in [swagger definition](./infra/openapi/cloudlog_api.yaml)
 
+Sample payload format of `/logs PUT`:
+```json
+[
+    {
+        "os": "windows",
+        "severity": 0,
+        "message": "test log message",
+        "timestamp": 1681336908.290896,
+        "hostname": "testowy host",
+        "unit": "test nad testami",
+        "raw": "jakies dziwne rzeczy log",
+        "log_type": "application"
+    }
+]
+```
+
 
 
 ### Database
