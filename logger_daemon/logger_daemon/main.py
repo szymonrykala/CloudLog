@@ -13,7 +13,6 @@ class LogWorker(threading.Thread):
         self.num_logs = num_logs
         self.batch_size = batch_size
         self.time_in_minutes = time_in_minutes
-        self.logs = self.get_logs()
         self.stopped = False
 
     def stop(self):
@@ -31,57 +30,58 @@ class LogWorker(threading.Thread):
         result = []
         try:
             output = subprocess.check_output(cmd, encoding='utf-8', errors='replace')
+            logs = json.loads(output)
+            print(f"logs fetched: {len(logs)}")
+            for log in logs:
+                result.append({
+                    'os': 'Windows',
+                    'severity': log['Level'],
+                    'message': log['Message'],
+                    'timestamp': log['TimeCreated'],
+                    'hostname': log['MachineName'],
+                    'unit': log['ProviderName'],
+                    'type': log['ContainerLog'],
+                    'raw': log
+                })
+            return result
         except subprocess.CalledProcessError as e:
-            print(f"Error executing PowerShell command: {e}")
-            return []
-        except:
-            print(f"Błąd PSH / brak logów")
-            return []
-        logs = json.loads(output)
-        if len(logs) == 0:
-            return []
-        
-        for log in logs:
-            result.append({
-                'os': 'Windows',
-                'severity': log['Level'],
-                'message': log['Message'],
-                'timestamp': log['TimeCreated'],
-                'hostname': log['MachineName'],
-                'unit': log['ProviderName'],
-                'type': log['ContainerLog'],
-                'raw': log
-            })
-        return result
-
+            print(f"PWSH Error / no logs")
+            return None
+    
     def get_linux_logs(self):
         cmd = f'journalctl --lines={self.num_logs} --since="{self.time_in_minutes} min ago" --output=json | jq \'.[] | {{os: "Linux", severity: .PRIORITY, message: .MESSAGE, timestamp: (.__REALTIME_TIMESTAMP / 1000000 | floor), hostname: ._HOSTNAME, unit: ._SYSTEMD_UNIT, type: ._EXE, raw: .}}\''
-        output = subprocess.check_output(cmd, encoding='utf-8', errors='replace', executable="/bin/bash")
-        logs = json.loads(output)
         result = []
-        if not logs:
+        try:
+            output = subprocess.check_output(cmd, encoding='utf-8', errors='replace', executable="/bin/bash")
+            logs = json.loads(output)
+            print(f"logs fetched: {len(logs)}")
+            for log in logs:
+                result.append({
+                    'os': log['os'],
+                    'severity': log['severity'],
+                    'message': log['message'],
+                    'timestamp': log['timestamp'],
+                    'hostname': log['hostname'],
+                    'unit': log['unit'],
+                    'type': "Application" if "snap" in log['raw']['_EXE'] or "opt" in log['raw']['_EXE'] else "System",
+                    'raw': log['raw']
+                })
             return result
-        for log in logs:
-            result.append({
-                'os': log['os'],
-                'severity': log['severity'],
-                'message': log['message'],
-                'timestamp': log['timestamp'],
-                'hostname': log['hostname'],
-                'unit': log['unit'],
-                'type': "Application" if "snap" in log['raw']['_EXE'] or "opt" in log['raw']['_EXE'] else "System",
-                'raw': log['raw']
-            })
-        return result
+        except:
+            print("no logs")
+            return None
 
     def run(self):
-        while not self.stopped:
-            batch = []
-            for _ in range(self.batch_size):
-                batch.append(self.get_logs())
-                time.sleep(self.time_in_minutes)
-            log_queue.put(batch)
-
+        batch = []
+        while not self.stopped:    
+            logs = self.get_logs()
+            if logs is not None:
+                for log in logs:
+                    batch.append(log)
+            if len(batch) >= self.batch_size:
+                log_queue.put(batch)
+                batch = []
+            time.sleep(self.time_in_minutes*60)
 
 class LogSender(threading.Thread):
     def __init__(self, endpoint):
@@ -110,9 +110,9 @@ class LogSender(threading.Thread):
             time.sleep(10)
 
 if __name__ == '__main__':
-    time_in_minutes = 60 #time in minutes since when a single powershell/bash command gets the logs
-    num_logs = 10 #max number of logs from single psh/bash call  
-    batch_size = 2  #how many times it calls psh/bash command
+    time_in_minutes = int(os.environ.get('TIME_IN_MINUTES', 1)) #time in minutes since when a single powershell/bash command gets the logs
+    num_logs = int(os.environ.get('NUM_LOGS', 100)) #max number of logs from single pwsh/bash call  
+    batch_size = int(os.environ.get('BATCH_SIZE', 10))  #how many logs do you want to send in one request
     endpoint = "http://localhost:5000/logs"
 
     log_queue = queue.Queue()
