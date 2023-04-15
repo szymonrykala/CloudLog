@@ -1,9 +1,8 @@
+from cloudlog_commons.exceptions import CloudLogBaseException
 
-from dataclasses import asdict, dataclass
 
-
-@dataclass
-class LogsReaderException(Exception):
-    statusCode: int = 500
-    message: str = "InternalServerError"
-
+class BadRequestParameterValue(CloudLogBaseException):
+    statusCode:int = 400
+    
+    def __init__(self, message:str):
+        self.message = message
