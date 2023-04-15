@@ -10,6 +10,7 @@ credentials
 /cloudlog_commons/python/*
 
 __pycache__/
+poetry.lock
 
 .terraform*
 *.tfstate
