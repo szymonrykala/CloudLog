@@ -1,42 +1,47 @@
 #!/bin/bash
 
-if ! command -v poetry &> /dev/null; then
-    echo "You need to install poetry to run this script"
-    exit
-fi
+check_command_exist(){
+    if ! command -v $1 &> /dev/null; then
+        echo "You need to install $1 to run this script"
+        exit
+    fi
+}
 
-if ! command -v poetry run pytest &> /dev/null; then
-    echo "Installing pytest"
-    poetry add pytest
-fi
+required_binaries=(poetry terraform aws)
+poetry_projects=(./cloudlog_commons/ ./cloud_logger/ ./lambda/read_logs/ ./lambda/save_logs/ ./logger_daemon/)
 
-echo "testing ..."
 
-poetry run pytest ./cloud_logger
-poetry run pytest ./cloudlog_commons
-poetry run pytest ./lambda/read_logs
-poetry run pytest ./lambda/save_logs
-poetry run pytest ./logger_daemon
-
-echo "Testing Successfull !"
+echo "Checking environment ..."
+for binary in "${required_binaries[@]}"; do
+    check_command_exist $binary
+done
 
 set -e
 
-if ! command -v terraform &> /dev/null; then
-    echo "The 'terraform' is not installed. Install it to continue the deployment"
-    exit
-fi
+echo "Testing ..."
+for project in "${poetry_projects[@]}"; do
+    cd $project
+    if ! grep pytest ./pyproject.toml; then
+        echo "Installing pytest"
+        poetry add "pytest=7.3.0"
+    fi
 
-if ! command -v aws &> /dev/null; then
-    echo "The 'aws'/'aws-cli' is not installed. Install it to continue the deployment"
-    exit
-fi
+    echo "Testing $project"
+    poetry run pytest -v --disable-warnings
+    cd -
+done
+echo "Tests are Successfull!"
+
+
+echo "Managing infrastructure..."
 
 cd infra
 terraform validate
-# terraform apply
+terraform apply
 
 echo "Infrastrucutre deployment done"
+
+exit #temporary
 
 cd ../log_sniffer
 npm run build
