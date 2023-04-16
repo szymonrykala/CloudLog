@@ -40,10 +40,10 @@ def test_field_value_parser_date(field, success, mocked_parser):
         "service": "test_service",
         "hostname": "my-machine",
         "unknown-key": "value",
-        "logType": "application"
+        "type": "application"
     }, True),
     ({
-        "logType": "Bad value"
+        "type": "Bad value"
     }, False),
     ({
         "fromDate": "2012-14-11T10:00:11"
@@ -72,13 +72,13 @@ def test_request_params(event_params, success):
             assert params_dict["fromDate"] < datetime.utcnow()
             assert params_dict["toDate"] <= datetime.utcnow()
 
-            for field in ('service', 'hostname', 'logType'):
+            for field in ('service', 'hostname', 'type'):
                 assert field not in params_dict
                 assert field in asdict(params)
 
         else:
-            if "logType" in event_params:
-                assert isinstance(params.logType, LogType)
+            if "type" in event_params:
+                assert isinstance(params.type, LogType)
 
             for field in event_params.keys():
                 if field in RequestParams.__dataclass_fields__:

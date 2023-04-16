@@ -8,7 +8,7 @@ from read_logs.request import RequestParams
     RequestParams(**{
         "service": "test_service",
         "hostname": "my-machine",
-        "logType": "application"
+        "type": "application"
     }),
     RequestParams()
 ))

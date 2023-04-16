@@ -17,9 +17,9 @@ paths:
       parameters:
         - $ref: "#/components/parameters/fromTime"
         - $ref: "#/components/parameters/toTime"
-        - $ref: "#/components/parameters/host"
-        - $ref: "#/components/parameters/logType"
-        - $ref: "#/components/parameters/loggingEntity"
+        - $ref: "#/components/parameters/hostname"
+        - $ref: "#/components/parameters/type"
+        - $ref: "#/components/parameters/service"
         - $ref: "#/components/parameters/severity"
       x-amazon-apigateway-request-validator: full-request-validation
       x-amazon-apigateway-integration:
@@ -89,7 +89,7 @@ paths:
                 properties:
                   message:
                     type: string
-                    exmple: "message sent"
+
 
 x-amazon-apigateway-request-validators:
   "full-request-validation":
@@ -112,7 +112,8 @@ components:
       required: False
       schema:
         type: string
-        example: 2023-09-21T12:00:00
+        format: date-time
+        example: 2023-04-15T10:00:00
 
     toTime:
       in: query
@@ -121,19 +122,20 @@ components:
       required: False
       schema:
         type: string
-        example: 2023-09-21T12:00:00
+        format: date-time
+        example: 2023-04-20T10:00:00
 
-    logType:
+    type:
       in: query
-      name: logType
+      name: type
       description: type of log
       required: False
       schema:
         type: string
-        enum: [system, hardware, logger]
+        enum: [system, application, logger]
         example: user
 
-    loggingEntity:
+    service:
       in: query
       name: service
       description: service, app that logged
@@ -142,7 +144,7 @@ components:
         type: string
         example: windows-update
 
-    host:
+    hostname:
       in: query
       name: hostname
       description: log host machine
@@ -154,11 +156,12 @@ components:
     severity:
       in: query
       name: severity
-      description: severity level of the log
+      description: lowest log severity
       required: False
       schema:
-        type: number
-        enum: [1, 2, 3, 4, 5, 6]
+        type: integer
+        minimum: 0
+        maximum: 7
         example: 1
 
   schemas:
@@ -169,7 +172,7 @@ components:
             id:
               type: string
               format: uuid
-              example: 35t4d6y4g56
+              example: eb573694-dc48-11ed-b719-3b8ae20b0d00
         - $ref: "#/components/schemas/LogItem"
 
     LogItem:
@@ -182,13 +185,14 @@ components:
           type: number
           example: 1675557738.587889
         severity:
-          type: number
-          enum: [0, 1, 2, 3, 4, 5, 6]
+          type: integer
+          minimum: 0
+          maximum: 7
           example: 1
         message:
           type: string
-          example: unable to update icon for discord1
-        log_type:
+          example: "Fontconfig error: \"/etc/fonts/conf.d/80-delicious.conf\", line 6: invalid attribute 'version'"
+        type:
           type: string
           enum: [application, system, logger]
           example: Application
@@ -197,7 +201,7 @@ components:
           example: user-laptop
         raw:
           type: string
-          example: log example that I have not
+          example: "kwi 16 13:11:42 szymon-latitude postman_postman.desktop[9226]: Fontconfig error: \"/etc/fonts/conf.d/80-delicious.conf\", line 6: invalid attribute 'version'"
         unit:
           type: string
           example: /snap/postman/184/usr/share/postman
@@ -210,10 +214,7 @@ components:
           schema:
             type: array
             items:
-              type: object
-              properties:
-                log:
-                  $ref: "#/components/schemas/LogItem"
+              $ref: "#/components/schemas/LogItem"
 
     UnauthorizedError:
       description: Access token is missing or invalid

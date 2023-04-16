@@ -11,7 +11,7 @@ from .exceptions import BadRequestParameterValue
 class RequestParams:
     service: Optional[str] = None
     hostname: Optional[str] = None
-    logType: Optional[LogType] = None
+    type: Optional[LogType] = None
     severity: int = field(default=0)
     fromDate: datetime = field(default=datetime.utcnow() - timedelta(hours=1))
     toDate: datetime = field(default=datetime.utcnow())
@@ -23,7 +23,7 @@ class RequestParams:
         resolvers = {
             "fromDate": lambda f: parser.date(f),
             "toDate": lambda f: parser.date(f),
-            "logType": lambda f: parser.log_type(f),
+            "type": lambda f: parser.log_type(f),
             "severity": lambda f: int(parser.params[f]),
         }
 
@@ -61,7 +61,7 @@ class FieldValueParser:
             return LogType(val)
 
         raise BadRequestParameterValue(
-            f"Value of 'logType' has to be on of ({LogType.SYSTEM},{LogType.APP},{LogType.LOGGER})"
+            f"Value of 'type' has to be on of ({LogType.SYSTEM},{LogType.APP},{LogType.LOGGER})"
         )
         
 

@@ -29,7 +29,7 @@ class Log:
     hostname: str
     unit: str
     raw: str
-    log_type: LogType
+    type: LogType
 
 
 @dataclass
@@ -41,7 +41,7 @@ class DBLog(Log):
         
         self.id = kwargs.get('id', str(uuid1()))
         self.os = OS(kwargs['os'])
-        self.log_type = LogType(kwargs['log_type'])
+        self.type = LogType(kwargs['type'])
         self.timestamp = float(kwargs['timestamp'])
         self.severity = int(kwargs['severity'])
 
@@ -51,8 +51,8 @@ class DBLog(Log):
     def __validate(self, data: dict):
         if any((
             data.get("os") not in list(OS),
-            data.get("log_type") not in list(LogType),
-            data.get("severity") not in range(0, 7),
+            data.get("type") not in list(LogType),
+            data.get("severity") not in range(0, 8), # <0-7>
             not isinstance(data.get("timestamp"), (float, Decimal)),
             not re.search(r"\d{10}\.\d{1,6}", str(data.get("timestamp")))
         )):
@@ -69,7 +69,7 @@ class MockedLog:
     hostname: str
     unit: str
     raw: str
-    log_type: LogType
+    type: LogType
     id: str = field(init=False, default_factory=lambda:str(uuid1()))
     
     @classmethod
@@ -82,7 +82,7 @@ class MockedLog:
             "hostname": "some host name",
             "unit": "some test unit",
             "raw": "raw version of the log",
-            "log_type": LogType.SYSTEM,
+            "type": LogType.SYSTEM,
         }
         defaults.update(kwargs or {})
         
