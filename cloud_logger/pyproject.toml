@@ -7,6 +7,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
+pytest = "7.3.0"
 cloudlog-commons = {path = "../cloudlog_commons", develop = true}
 
 
