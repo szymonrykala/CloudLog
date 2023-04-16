@@ -1,0 +1,570 @@
+{
+	"info": {
+		"_postman_id": "6d92f7c1-921e-4aa1-8c74-063dfcdb4c7f",
+		"name": "CloudLog",
+		"description": "CLoudLog api definition\n\nContact Support:\n Email: szymonrykala@gmail.com",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "13316422"
+	},
+	"item": [
+		{
+			"name": "logs",
+			"item": [
+				{
+					"name": "/logs",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"var schema = {",
+									"    \"properties\": {",
+									"        \"id\": \"string\",",
+									"        \"os\": \"string\",",
+									"        \"timestamp\": \"number\",",
+									"        \"severity\": \"integer\",",
+									"        \"message\": \"string\",",
+									"        \"type\": \"string\",",
+									"        \"hostname\": \"string\",",
+									"        \"raw\": \"string\",",
+									"        \"unit\": \"string\"",
+									"    }",
+									"};",
+									"",
+									"pm.test('Response schema is valid', function () {",
+									"    const jsonData = pm.response.json();",
+									"    for (const data in jsonData){",
+									"        pm.expect(tv4.validate(data, schema)).to.be.true;",
+									"    }",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/logs?fromDate=2023-04-15T10:00:00&toDate=2023-04-20T10:00:00&severity=7",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"logs"
+							],
+							"query": [
+								{
+									"key": "fromDate",
+									"value": "2023-04-15T10:00:00",
+									"description": "datetime to search from"
+								},
+								{
+									"key": "toDate",
+									"value": "2023-04-20T10:00:00",
+									"description": "end datetime to search to"
+								},
+								{
+									"key": "hostname",
+									"value": "szymon-latitude",
+									"description": "log host machine",
+									"disabled": true
+								},
+								{
+									"key": "type",
+									"value": "logger",
+									"description": "type of log",
+									"disabled": true
+								},
+								{
+									"key": "service",
+									"value": "windows-update",
+									"description": "service, app that logged",
+									"disabled": true
+								},
+								{
+									"key": "severity",
+									"value": "7",
+									"description": "lowest log severity"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "valid request",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "https://quo8wv7xm9.execute-api.eu-central-1.amazonaws.com/dev/logs?fromDate=2023-04-15T10:00:00&toDate=2023-04-20T10:00:00&severity=7",
+									"protocol": "https",
+									"host": [
+										"quo8wv7xm9",
+										"execute-api",
+										"eu-central-1",
+										"amazonaws",
+										"com"
+									],
+									"path": [
+										"dev",
+										"logs"
+									],
+									"query": [
+										{
+											"key": "fromDate",
+											"value": "2023-04-15T10:00:00",
+											"description": "datetime to search from"
+										},
+										{
+											"key": "toDate",
+											"value": "2023-04-20T10:00:00",
+											"description": "end datetime to search to"
+										},
+										{
+											"key": "hostname",
+											"value": "szymon-latitude",
+											"description": "log host machine",
+											"disabled": true
+										},
+										{
+											"key": "type",
+											"value": "logger",
+											"description": "type of log",
+											"disabled": true
+										},
+										{
+											"key": "service",
+											"value": "windows-update",
+											"description": "service, app that logged",
+											"disabled": true
+										},
+										{
+											"key": "severity",
+											"value": "7",
+											"description": "lowest log severity"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Date",
+									"value": "Sun, 16 Apr 2023 12:28:45 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Content-Length",
+									"value": "978"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "x-amzn-RequestId",
+									"value": "7b94f920-6111-4e1c-ba22-6f802078c455"
+								},
+								{
+									"key": "x-amz-apigw-id",
+									"value": "DeF_sFVlliAFV6g="
+								},
+								{
+									"key": "X-Amzn-Trace-Id",
+									"value": "Root=1-643be9fd-69dbc452652a33464669071d;Sampled=0;lineage=8a8c4389:0"
+								}
+							],
+							"cookie": [],
+							"body": "[\n    {\n        \"os\": \"linux\",\n        \"severity\": 3,\n        \"message\": \"Fontconfig error: \\\"/etc/fonts/conf.d/80-delicious.conf\\\", line 6: invalid attribute 'version'\",\n        \"timestamp\": 1681642779.0976815,\n        \"hostname\": \"szymon-latitude\",\n        \"unit\": \"postman_postman.desktop\",\n        \"raw\": \"kwi 16 13:11:42 szymon-latitude postman_postman.desktop[9226]: Fontconfig error: \\\"/etc/fonts/conf.d/80-delicious.conf\\\", line 6: invalid attribute 'version'\",\n        \"type\": \"application\",\n        \"id\": \"eb573694-dc48-11ed-b719-3b8ae20b0d00\"\n    },\n    {\n        \"os\": \"linux\",\n        \"severity\": 4,\n        \"message\": \"Fontconfig warning: \\\"/etc/fonts/conf.d/90-synthetic.conf\\\", line 5: unknown element \\\"its:translateRule\\\"\",\n        \"timestamp\": 1681643779.0976815,\n        \"hostname\": \"szymon-latitude\",\n        \"unit\": \"postman_postman.desktop\",\n        \"raw\": \"kwi 16 13:11:42 szymon-latitude postman_postman.desktop[9226]: Fontconfig warning: \\\"/etc/fonts/conf.d/90-synthetic.conf\\\", line 5: unknown element \\\"its:translateRule\\\"\",\n        \"type\": \"application\",\n        \"id\": \"eb574834-dc48-11ed-ba62-3b8ae20b0d00\"\n    }\n]"
+						},
+						{
+							"name": "invalid date format",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/logs?fromDate=2023-04-15T10:00:00&toDate=2023-dd04-20T10:00:00&severity=7",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"logs"
+									],
+									"query": [
+										{
+											"key": "fromDate",
+											"value": "2023-04-15T10:00:00",
+											"description": "datetime to search from"
+										},
+										{
+											"key": "toDate",
+											"value": "2023-dd04-20T10:00:00",
+											"description": "end datetime to search to"
+										},
+										{
+											"key": "hostname",
+											"value": "szymon-latitude",
+											"description": "log host machine",
+											"disabled": true
+										},
+										{
+											"key": "type",
+											"value": "logger",
+											"description": "type of log",
+											"disabled": true
+										},
+										{
+											"key": "service",
+											"value": "windows-update",
+											"description": "service, app that logged",
+											"disabled": true
+										},
+										{
+											"key": "severity",
+											"value": "7",
+											"description": "lowest log severity"
+										}
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Date",
+									"value": "Sun, 16 Apr 2023 12:30:01 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Content-Length",
+									"value": "58"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "x-amzn-RequestId",
+									"value": "56986481-94df-497f-b314-66d91aaaab10"
+								},
+								{
+									"key": "x-amz-apigw-id",
+									"value": "DeGLgG28liAFXQw="
+								},
+								{
+									"key": "X-Amzn-Trace-Id",
+									"value": "Root=1-643bea49-1ee02391470b50866142e4c1;Sampled=0;lineage=8a8c4389:0"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"message\": \"Date field 'toDate' has to be in ISO format\"\n}"
+						}
+					]
+				},
+				{
+					"name": "/logs",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"var schema = {",
+									"    \"properties\": {",
+									"        \"message\": \"string\"",
+									"    }",
+									"};",
+									"",
+									"pm.test('Response schema is valid', function () {",
+									"    const jsonData = pm.response.json();",
+									"    for (const data in jsonData){",
+									"        pm.expect(tv4.validate(data, schema)).to.be.true;",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    {\n        \"os\": \"linux\",\n        \"severity\": 3,\n        \"message\": \"Fontconfig error: \\\"/etc/fonts/conf.d/80-delicious.conf\\\", line 6: invalid attribute 'version'\",\n        \"timestamp\": {{$isoTimestamp}},\n        \"hostname\": \"szymon-latitude\",\n        \"unit\": \"postman_postman.desktop\",\n        \"raw\": \"kwi 16 13:11:42 szymon-latitude postman_postman.desktop[9226]: Fontconfig error: \\\"/etc/fonts/conf.d/80-delicious.conf\\\", line 6: invalid attribute 'version'\",\n        \"type\": \"application\"\n    },\n    {\n        \"os\": \"linux\",\n        \"severity\": 4,\n        \"message\": \"Fontconfig warning: \\\"/etc/fonts/conf.d/90-synthetic.conf\\\", line 5: unknown element \\\"its:translateRule\\\"\",\n        \"timestamp\": {{$isoTimestamp}},\n        \"hostname\": \"szymon-latitude\",\n        \"unit\": \"postman_postman.desktop\",\n        \"raw\": \"kwi 16 13:11:42 szymon-latitude postman_postman.desktop[9226]: Fontconfig warning: \\\"/etc/fonts/conf.d/90-synthetic.conf\\\", line 5: unknown element \\\"its:translateRule\\\"\",\n        \"type\": \"application\"\n    }\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/logs",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"logs"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "valid request",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "[\n    {\n        \"os\": \"linux\",\n        \"severity\": 3,\n        \"message\": \"Fontconfig error: \\\"/etc/fonts/conf.d/80-delicious.conf\\\", line 6: invalid attribute 'version'\",\n        \"timestamp\": 1681642779.097681556,\n        \"hostname\": \"szymon-latitude\",\n        \"unit\": \"postman_postman.desktop\",\n        \"raw\": \"kwi 16 13:11:42 szymon-latitude postman_postman.desktop[9226]: Fontconfig error: \\\"/etc/fonts/conf.d/80-delicious.conf\\\", line 6: invalid attribute 'version'\",\n        \"type\": \"application\"\n    },\n    {\n        \"os\": \"linux\",\n        \"severity\": 4,\n        \"message\": \"Fontconfig warning: \\\"/etc/fonts/conf.d/90-synthetic.conf\\\", line 5: unknown element \\\"its:translateRule\\\"\",\n        \"timestamp\": 1681643779.097681556,\n        \"hostname\": \"szymon-latitude\",\n        \"unit\": \"postman_postman.desktop\",\n        \"raw\": \"kwi 16 13:11:42 szymon-latitude postman_postman.desktop[9226]: Fontconfig warning: \\\"/etc/fonts/conf.d/90-synthetic.conf\\\", line 5: unknown element \\\"its:translateRule\\\"\",\n        \"type\": \"application\"\n    }\n]",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://quo8wv7xm9.execute-api.eu-central-1.amazonaws.com/dev/logs",
+									"protocol": "https",
+									"host": [
+										"quo8wv7xm9",
+										"execute-api",
+										"eu-central-1",
+										"amazonaws",
+										"com"
+									],
+									"path": [
+										"dev",
+										"logs"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Date",
+									"value": "Sun, 16 Apr 2023 12:30:56 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Content-Length",
+									"value": "30"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "x-amzn-RequestId",
+									"value": "c2d468b3-1241-4562-bf32-c49aa44c989d"
+								},
+								{
+									"key": "x-amz-apigw-id",
+									"value": "DeGUGFnhFiAFafA="
+								},
+								{
+									"key": "X-Amzn-Trace-Id",
+									"value": "Root=1-643bea80-311c295e37ef1e385b948c92"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"message\": \"message sent\"\n}"
+						},
+						{
+							"name": "invalid body format",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"os\": \"linux\",\n    \"severity\": 3,\n    \"message\": \"Fontconfig error: \\\"/etc/fonts/conf.d/80-delicious.conf\\\", line 6: invalid attribute 'version'\",\n    \"timestamp\": 1681642779.097681556,\n    \"hostname\": \"szymon-latitude\",\n    \"unit\": \"postman_postman.desktop\",\n    \"raw\": \"kwi 16 13:11:42 szymon-latitude postman_postman.desktop[9226]: Fontconfig error: \\\"/etc/fonts/conf.d/80-delicious.conf\\\", line 6: invalid attribute 'version'\",\n    \"type\": \"application\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/logs",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"logs"
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Date",
+									"value": "Sun, 16 Apr 2023 12:31:49 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Content-Length",
+									"value": "35"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "x-amzn-RequestId",
+									"value": "b66d550c-7fa7-444b-a221-8797a5a85954"
+								},
+								{
+									"key": "x-amzn-ErrorType",
+									"value": "BadRequestException"
+								},
+								{
+									"key": "x-amz-apigw-id",
+									"value": "DeGcZG7KFiAFRZQ="
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"message\": \"Invalid request body\"\n}"
+						}
+					]
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response time is less than 200ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(200);",
+							"});"
+						]
+					}
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "awsv4",
+		"awsv4": [
+			{
+				"key": "region",
+				"value": "eu-central-1",
+				"type": "string"
+			},
+			{
+				"key": "secretKey",
+				"value": "---------------------",
+				"type": "string"
+			},
+			{
+				"key": "accessKey",
+				"value": "---------------------",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "https://quo8wv7xm9.execute-api.eu-central-1.amazonaws.com/dev",
+			"type": "string"
+		}
+	]
+}
