@@ -12,7 +12,7 @@ from cloudlog_commons.exceptions import LogEntryValidationError
     (MockedLog.with_(), True),
     (MockedLog.with_(timestamp=123, hostname="zupa"), False),
     (MockedLog.with_(os="RedHat"), False),
-    (MockedLog.with_(log_type="unsupported"), False),
+    (MockedLog.with_(type="unsupported"), False),
 ))
 def test_log(data:dict, success:bool):
     if success:
@@ -21,7 +21,7 @@ def test_log(data:dict, success:bool):
         assert isinstance(log, DBLog)
         assert isinstance(log.id, str)
         assert isinstance(log.os, OS)
-        assert isinstance(log.log_type, LogType)
+        assert isinstance(log.type, LogType)
         assert isinstance(log.severity, int)
         assert isinstance(log.timestamp, float)
 

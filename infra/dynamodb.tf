@@ -15,8 +15,8 @@ resource "aws_dynamodb_table" "logs_table" {
   }
 
   local_secondary_index {
-    name = "log_type"
-    range_key = "log_type"
+    name = "type"
+    range_key = "type"
     projection_type = "ALL"
   }
 
@@ -31,7 +31,7 @@ resource "aws_dynamodb_table" "logs_table" {
   }
 
   attribute {
-    name = "log_type"
+    name = "type"
     type = "S"
   }
 
@@ -39,30 +39,4 @@ resource "aws_dynamodb_table" "logs_table" {
     name = "hostname"
     type = "S"
   }
-
-  # attribute {
-  #   name = "unit"
-  #   type = "S"
-  # }
-
-  # attribute {
-  #   name = "message"
-  #   type = "S"
-  # }
-
-  # attribute {
-  #   name = "severity"
-  #   type = "S"
-  # }
-
-  # attribute {
-  #   name = "os"
-  #   type = "S"
-  # }
-
-  # attribute {
-  #   name = "raw"
-  #   type = "S"
-  # }
-
 }

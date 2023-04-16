@@ -5,12 +5,12 @@ Logs agregation system built on top of AWS
 
 ### Log format
 * `os`: string - [Windows,Linux]
-* `severity`: number
+* `severity`: number <0-7>
 * `message`: string
 * `timestamp`: number
 * `hostname`: string - workstation name
-* `unit`: string - process/application
-* `type`: string - [System, Application, CloudLogger]
+* `unit`: string - process/application name
+* `type`: string - [system, application, logger]
 * `raw`: string - raw format of log
 
 
@@ -23,30 +23,14 @@ Logs agregation system built on top of AWS
 | timestamp | TimeCreated   | __REALTIME_TIMESTAMP                                     |
 | hostname  | MachineName   | _HOSTNAME                                                |
 | unit      | ProviderName  | _EXE                                                     |
-| type      | ContainerName | `Application` if ("opt" or "snap") in _EXE else `System` |
+| type      | ContainerName | `application` if ("opt" or "snap") in _EXE else `system` |
 | raw       | *             | *                                                        |
 
 ## AWS
 
 ### API
-defined in [swagger definition](./infra/openapi/cloudlog_api.yaml)
-
-Sample payload format of `/logs PUT`:
-```json
-[
-    {
-        "os": "windows",
-        "severity": 0,
-        "message": "test log message",
-        "timestamp": 1681336908.290896,
-        "hostname": "testowy host",
-        "unit": "test nad testami",
-        "raw": "jakies dziwne rzeczy log",
-        "log_type": "application"
-    }
-]
-```
-
+[Postman documentation](https://documenter.getpostman.com/view/13316422/2s93XyTiMM)
+[Swagger definition](./infra/openapi/cloudlog_api.yaml)
 
 
 ### Database
@@ -58,7 +42,7 @@ Database build on AWS DynamoDB
 | --------- | ------ | -------------------------------- | ------------------------------------- |
 | id        | string | uuid                             | *f43t446yg*                           |
 | os        | string | (Linux, Windows)                 | *Linux*                               |
-| severity  | number | 0 < 7                            | *3*                                   |
+| severity  | number | 0 - 7                            | *3*                                   |
 | message   | string | ---                              | *unable to update icon for discord1*  |
 | timestamp | number | unix timestamp                   | *1675557738587889*                    |
 | hostname  | string | ---                              | *szymon-latitude*                     |

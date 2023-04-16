@@ -12,7 +12,7 @@ class ReadRequest(DynamoRequest):
         
         self.__att_names = {
             '#t': 'timestamp', 
-            # '#severity': 'severity'
+            '#severity': 'severity'
         }
         self.__att_values = {
             ':tto': Decimal(self.params.toDate.timestamp()),
@@ -21,17 +21,17 @@ class ReadRequest(DynamoRequest):
         }
         self.__exp = " AND ".join((
             "#t BETWEEN :tfr AND :tto",
-            "severity >= :severity"
+            "#severity <= :severity"
         ))
         
-        for f in ('service', 'hostname'):
+        for f in ('service', 'hostname', 'type'):
             value = params.__getattribute__(f)
             if value:
                 self.__att_names[f"#{f}"] = f
                 self.__att_values[f":{f}"] = params.__getattribute__(f)
                 self.__exp += f" AND #{f}=:{f}"
         
-        if params.logType:
+        if params.type:
             self.__att_names[f"#{f}"] = f
             self.__att_values[f":{f}"] = params.__getattribute__(f)
             self.__exp += f" AND #{f}=:{f}"
