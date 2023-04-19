@@ -6,6 +6,7 @@ import subprocess
 import requests
 import platform
 import json
+from cloudlog_commons import Log, OS, LogType
 
 class LogWorker(threading.Thread):
     def __init__(self, num_logs, batch_size, time_in_minutes):
@@ -25,47 +26,47 @@ class LogWorker(threading.Thread):
             logs = self.get_linux_logs()
         return logs
 
-    def get_windows_logs(self): #Get-WinEvent -FilterHashtable @{Logname="Application","System"; StartTime=(Get-Date).AddMinutes(-60)} -MaxEvents 100 | Select-Object TimeCreated, Level, Message, ProviderName, MachineName, ContainerLog | ConvertTo-Json
-        cmd = f"powershell -Command Get-WinEvent -FilterHashtable @{{logname=\'Application\',\'System\'; StartTime=(Get-Date).AddMinutes(-{self.time_in_minutes})}} -MaxEvents {self.num_logs} | Select-Object TimeCreated, Level, Message, ProviderName, MachineName, ContainerLog | ConvertTo-Json"
+    def get_windows_logs(self): #Get-WinEvent -FilterHashtable @{Logname="Application","System"; StartTime=(Get-Date).AddMinutes(-60)} -MaxEvents 100 | Select-Object @{Name="TimeCreated";Expression={$_.TimeCreated.ToUniversalTime().Subtract((Get-Date "1/1/1970")).TotalSeconds}}, Level, Message, ProviderName, MachineName, ContainerLog | ConvertTo-Json
+        cmd = f"powershell -Command Get-WinEvent -FilterHashtable @{{logname=\'Application\',\'System\'; StartTime=(Get-Date).AddMinutes(-{self.time_in_minutes})}} -MaxEvents {self.num_logs} | Select-Object @{{Name=\'TimeCreated\';Expression={{$_.TimeCreated.ToUniversalTime().Subtract((Get-Date \'1/1/1970\')).TotalSeconds}}}}, Level, Message, ProviderName, MachineName, ContainerLog | ConvertTo-Json"
         result = []
         try:
             output = subprocess.check_output(cmd, encoding='utf-8', errors='replace')
             logs = json.loads(output)
             print(f"logs fetched: {len(logs)}")
             for log in logs:
-                result.append({
-                    'os': 'Windows',
-                    'severity': log['Level'],
-                    'message': log['Message'],
-                    'timestamp': log['TimeCreated'],
-                    'hostname': log['MachineName'],
-                    'unit': log['ProviderName'],
-                    'type': log['ContainerLog'],
-                    'raw': log
-                })
+                result.append(Log(
+                    OS.WINDOWS.value,
+                    log['Level'],
+                    log['Message'],
+                    log['TimeCreated'],
+                    log['MachineName'],
+                    log['ProviderName'],
+                    log, 
+                    LogType.SYSTEM.value if (log['ContainerLog'] == "System") else LogType.APP.value if (log['ContainerLog'] == "Application") else LogType.LOGGER.value))
+            print(result)
             return result
         except subprocess.CalledProcessError as e:
             print(f"PWSH Error / no logs")
             return None
     
-    def get_linux_logs(self):
-        cmd = f'journalctl --lines={self.num_logs} --since="{self.time_in_minutes} min ago" --output=json | jq \'.[] | {{os: "Linux", severity: .PRIORITY, message: .MESSAGE, timestamp: (.__REALTIME_TIMESTAMP / 1000000 | floor), hostname: ._HOSTNAME, unit: ._SYSTEMD_UNIT, type: ._EXE, raw: .}}\''
-        result = []
+    def get_linux_logs(self):   #cmd = f'journalctl --lines=100 --since="60 min ago" --output=json | jq \'.[] | {{os: "Linux", severity: .PRIORITY, message: .MESSAGE, timestamp: (.__REALTIME_TIMESTAMP / 1000000 | floor | str | tonumber), hostname: ._HOSTNAME, unit: ._EXE}}\''
+        cmd = f'journalctl --lines={self.num_logs} --since="{self.time_in_minutes} min ago" --output=json | jq \'.[] | {{os: "Linux", severity: .PRIORITY, message: .MESSAGE, timestamp: (.__REALTIME_TIMESTAMP / 1000000 | floor | str | tonumber), hostname: ._HOSTNAME, unit: ._EXE}}\''
+        result = ""
         try:
             output = subprocess.check_output(cmd, encoding='utf-8', errors='replace', executable="/bin/bash")
             logs = json.loads(output)
             print(f"logs fetched: {len(logs)}")
             for log in logs:
-                result.append({
-                    'os': log['os'],
-                    'severity': log['severity'],
-                    'message': log['message'],
-                    'timestamp': log['timestamp'],
-                    'hostname': log['hostname'],
-                    'unit': log['unit'],
-                    'type': "Application" if "snap" in log['raw']['_EXE'] or "opt" in log['raw']['_EXE'] else "System",
-                    'raw': log['raw']
-                })
+                result.append(Log(
+                    OS.LINUX.value,
+                    log['severity'],
+                    log['message'],
+                    log['timestamp'],
+                    log['hostname'],
+                    log['unit'],
+                    log,
+                    LogType.APP.value if "snap" in log['unit'] or "opt" in log['unit'] else LogType.SYSTEM.value))
+            print(result)
             return result
         except:
             print("no logs")
