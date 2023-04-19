@@ -5,31 +5,38 @@ resource "aws_dynamodb_table" "logs_table" {
   billing_mode   = "PROVISIONED"
   read_capacity  = 1
   write_capacity = 1
-  hash_key       = "logId"
-  range_key      = "day"
+  hash_key       = "id"
+  range_key      = "timestamp"
+
+  local_secondary_index {
+    name = "hostname"
+    range_key = "hostname"
+    projection_type = "ALL"
+  }
+
+  local_secondary_index {
+    name = "type"
+    range_key = "type"
+    projection_type = "ALL"
+  }
 
   attribute {
-    name = "logId"
+    name = "id"
     type = "S"
   }
 
   attribute {
-    name = "day"
+    name = "timestamp"
+    type = "N"
+  }
+
+  attribute {
+    name = "type"
     type = "S"
   }
 
-
-  #   global_secondary_index {
-  #     name               = "GameTitleIndex"
-  #     hash_key           = "GameTitle"
-  #     range_key          = "TopScore"
-  #     write_capacity     = 1
-  #     read_capacity      = 1
-  #     projection_type    = "INCLUDE"
-  #     non_key_attributes = ["UserId"]
-  #   }
-
-  tags = {
-    Name = local.db_table.name
+  attribute {
+    name = "hostname"
+    type = "S"
   }
 }

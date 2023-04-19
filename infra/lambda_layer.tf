@@ -4,7 +4,7 @@ data "external" "manage_proper_dir_structure_for_layer" {
   working_dir = local.lambda.common_layer.source
   program = ["sh", "-c", <<-EOF
     mkdir python
-    cp -r ${local.lambda.common_layer.name} python/${local.lambda.common_layer.name}
+    cp -r ${local.lambda.common_layer.name} python/
 
     jq "{}" #dummy output
   EOF

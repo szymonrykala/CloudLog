@@ -8,6 +8,7 @@ packages = [{include = "logger_daemon"}]
 
 [tool.poetry.dependencies]
 python = "^3.9"
+pytest = "7.3.0"
 
 
 [build-system]

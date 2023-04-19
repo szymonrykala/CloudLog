@@ -1,10 +1,13 @@
-openapi: 3.0.0
+openapi: 3.0.1
 info:
   description: CLoudLog api definition
-  version: "1.0.1"
+  version: "1.0.3"
   title: CloudLog
   contact:
     email: szymonrykala@gmail.com
+
+security:
+  - AWS_IAM: []
 
 paths:
   /logs:
@@ -14,14 +17,19 @@ paths:
       parameters:
         - $ref: "#/components/parameters/fromTime"
         - $ref: "#/components/parameters/toTime"
-        - $ref: "#/components/parameters/host"
-        - $ref: "#/components/parameters/logType"
-        - $ref: "#/components/parameters/loggingEntity"
+        - $ref: "#/components/parameters/hostname"
+        - $ref: "#/components/parameters/type"
+        - $ref: "#/components/parameters/service"
         - $ref: "#/components/parameters/severity"
+      x-amazon-apigateway-request-validator: full-request-validation
       x-amazon-apigateway-integration:
-        httpMethod: GET
-        payloadFormatVersion: 1.0
-        type: HTTP_PROXY
+        credentials: ${gateway_iam_role}
+        httpMethod: POST
+        contentHandling: CONVERT_TO_TEXT
+        passthroughBehavior": when_no_templates
+        type: "AWS_PROXY"
+        uri: arn:aws:apigateway:${region}:lambda:path/2015-03-31/functions/${get_logs_arn}/invocations
+
       responses:
         "200":
           description: users list
@@ -30,23 +38,18 @@ paths:
               schema:
                 type: array
                 items:
-                  allOf:
-                    - type: object
-                      properties:
-                        id:
-                          type: string
-                          format: uuid
-                          example: 35t4d6y4g56
-                    - $ref: "#/components/schemas/LogItem"
-
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        default:
-          description: thrown HTTP error
+                  $ref: "#/components/schemas/DBLogItem"
+        "400":
+          description: request data are not correct
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: explonation of the error
+
     put:
       tags:
         - logs
@@ -57,54 +60,82 @@ paths:
               type: array
               items:
                 $ref: "#/components/schemas/LogItem"
-
+      x-amazon-apigateway-request-validator: full-request-validation
       x-amazon-apigateway-integration:
+        type: AWS
         httpMethod: POST
-        payloadFormatVersion: 1.0
-        type: HTTP_PROXY
+        uri: arn:aws:apigateway:${region}:sqs:path/${account_id}/${logs_buffer_queue_name}
+        credentials: ${gateway_iam_role}
+        contentHandling: CONVERT_TO_TEXT
+        passthroughBehavior: "never"
+        requestParameters:
+          integration.request.header.Content-Type: "'application/x-www-form-urlencoded'"
+        requestTemplates:
+          application/json: "Action=SendMessage&MessageBody=$input.body"
+        responses:
+          default:
+            statusCode: 200
+            responseTemplates:
+              application/json: >
+                { "message": "message sent" }
+
       responses:
         "200":
-          description: logs saved
-        "403":
-          $ref: "#/components/responses/UnauthorizedError"
-        default:
-          description: thrown HTTP error
+          description: logs sent
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                type: object
+                properties:
+                  message:
+                    type: string
+
+
+x-amazon-apigateway-request-validators:
+  "full-request-validation":
+    validateRequestParameters: true
+    validateRequestBody: true
 
 components:
+  securitySchemes:
+    AWS_IAM:
+      type: "apiKey"
+      name: "Authorization"
+      in: "header"
+      x-amazon-apigateway-authtype: awsSigv4
+
   parameters:
     fromTime:
       in: query
-      name: from
+      name: fromDate
       description: datetime to search from
       required: False
       schema:
         type: string
-        example: 2023-09-21T12:00:00
+        format: date-time
+        example: 2023-04-15T10:00:00
 
     toTime:
       in: query
-      name: to
+      name: toDate
       description: end datetime to search to
       required: False
       schema:
         type: string
-        example: 2023-09-21T12:00:00
+        format: date-time
+        example: 2023-04-20T10:00:00
 
-    logType:
+    type:
       in: query
       name: type
       description: type of log
       required: False
       schema:
         type: string
-        enum: [user, system, hardware, logger]
+        enum: [system, application, logger]
         example: user
 
-    loggingEntity:
+    service:
       in: query
       name: service
       description: service, app that logged
@@ -113,7 +144,7 @@ components:
         type: string
         example: windows-update
 
-    host:
+    hostname:
       in: query
       name: hostname
       description: log host machine
@@ -125,52 +156,55 @@ components:
     severity:
       in: query
       name: severity
-      description: severity level of the log
+      description: lowest log severity
       required: False
       schema:
-        type: number
-        enum: [1, 2, 3, 4, 5, 6]
+        type: integer
+        minimum: 0
+        maximum: 7
         example: 1
 
   schemas:
+    DBLogItem:
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              example: eb573694-dc48-11ed-b719-3b8ae20b0d00
+        - $ref: "#/components/schemas/LogItem"
+
     LogItem:
       type: object
       properties:
         os:
           type: string
-          enum: [Windows, Linux]
+          enum: [windows, linux]
         timestamp:
           type: number
-          example: 1675557738587889
+          example: 1675557738.587889
         severity:
-          type: number
-          enum: [0, 1, 2, 3, 4, 5, 6]
+          type: integer
+          minimum: 0
+          maximum: 7
           example: 1
         message:
           type: string
-          example: unable to update icon for discord1
+          example: "Fontconfig error: \"/etc/fonts/conf.d/80-delicious.conf\", line 6: invalid attribute 'version'"
         type:
           type: string
-          enum: [Application, System, CloudLogger]
+          enum: [application, system, logger]
           example: Application
         hostname:
           type: string
           example: user-laptop
         raw:
           type: string
-          example: log example that I have not
+          example: "kwi 16 13:11:42 szymon-latitude postman_postman.desktop[9226]: Fontconfig error: \"/etc/fonts/conf.d/80-delicious.conf\", line 6: invalid attribute 'version'"
         unit:
           type: string
           example: /snap/postman/184/usr/share/postman
-
-    # HTTP ERRORS
-    Error:
-      type: object
-      properties:
-        message:
-          type: string
-          description: meningfull error explonation
-          example: Required entity does not exist
 
   responses:
     LogsResponse:
@@ -180,10 +214,7 @@ components:
           schema:
             type: array
             items:
-              type: object
-              properties:
-                log:
-                  $ref: "#/components/schemas/LogItem"
+              $ref: "#/components/schemas/LogItem"
 
     UnauthorizedError:
       description: Access token is missing or invalid

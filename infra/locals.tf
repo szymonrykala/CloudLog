@@ -6,6 +6,7 @@ locals {
   region = "eu-central-1"
   db_table = {
     name = "logs_store"
+    username = "cloudlog_root"
   }
 
   frontend = {
@@ -17,11 +18,11 @@ locals {
     handler = "main.handler"
 
     read_lambda = {
-      source = "../lambda/read_logs/read_logs"
+      source = "../lambda/read_logs/"
     }
 
     save_lambda = {
-      source = "../lambda/save_logs/save_logs"
+      source = "../lambda/save_logs/"
     }
 
     common_layer = {

@@ -16,7 +16,7 @@ variable "handler" {
 variable "excludes" {
   description = "list of zip excluded files"
   type        = list(string)
-  default     = []
+  default     = ["tests", ".pytest_cache", "README.md", "poetry.lock"]
 }
 
 variable "layers" {

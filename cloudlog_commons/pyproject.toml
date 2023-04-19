@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "cloudlog-commons"
-version = "0.1.0"
+version = "0.1.1"
 description = "common library for CLoudLog lambdas"
 authors = ["Szymon Rykala <szymonrykala@gmail.com>"]
 readme = "README.md"
@@ -8,6 +8,8 @@ packages = [{include = "cloudlog_commons"}]
 
 [tool.poetry.dependencies]
 python = "^3.9"
+boto3 = "^1.26.109"
+pytest = "7.3.0"
 
 
 [build-system]
