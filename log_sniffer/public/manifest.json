@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "LogSniffer",
+  "name": "Log Sniffer for CloudLog System",
   "icons": [
     {
       "src": "favicon.ico",
