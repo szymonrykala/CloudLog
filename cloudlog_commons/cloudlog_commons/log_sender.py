@@ -1,9 +1,11 @@
 import os
-from queue import Queue
 import queue
 import threading
-import requests
 import time
+from queue import Queue
+
+import requests
+from requests_auth_aws_sigv4 import AWSSigV4
 
 from . import Log
 
@@ -16,30 +18,26 @@ class LogSender(threading.Thread):
     batch_size: int
     send_interval: int
 
-    def __init__(self, endpoint=None, batch_size=None, send_interval=None):
+    def __init__(
+            self,
+            endpoint=os.environ["CLOUDLOG_ENDPOINT"],
+            batch_size=os.environ.get("CLOUDLOG_BATCH_SIZE", 25),
+            send_interval=os.environ.get("CLOUDLOG_SEND_INTERVAL", 10)
+        ):
         super().__init__()
-        self.endpoint = endpoint if endpoint else os.environ["CLOUDLOG_ENDPOINT"]
-        self.batch_size = batch_size if batch_size else os.environ.get("CLOUDLOG_BATCH_SIZE", 25)
-        self.send_interval = send_interval if send_interval else os.environ.get("CLOUDLOG_SEND_INTERVAL", 10)
+        self.endpoint = endpoint
+        self.batch_size = batch_size
+        self.send_interval = send_interval
 
     def stop(self):
         self.stopped = True
 
     def write_log(self, log: Log) -> bool:
-        if log is None or type(log) != Log:
-            return False
-
         self.log_queue.put(log)
-        return True
 
     def write_logs(self, logs: list[Log]) -> bool:
-        if logs is None or type(logs) != list:
-            return False
-
         for log in logs:
             self.write_log(log)
-
-        return True
 
     def run(self):
         while not self.stopped:
@@ -50,13 +48,16 @@ class LogSender(threading.Thread):
                 except queue.Empty:
                     break
 
-            try:
-                response = requests.post(self.endpoint, json=batch)
-                if response.status_code == 200:
-                    print(f"Sent batch with {len(batch)} logs")
-                else:
-                    print(f"Failed to send logs with status code {response.status_code}")
-            except requests.exceptions.RequestException as e:
-                print(f"Failed to send logs: {e}")
+            if len(batch) > 0:
+                try:
+                    # Uses same env variables as AWS CLI
+                    auth = AWSSigV4('execute-api')
+                    response = requests.post(self.endpoint, json=batch, auth=auth)
+                    if response.status_code == 200:
+                        print(f"Sent batch with {len(batch)} logs")
+                    else:
+                        print(f"Failed to send logs with status code {response.status_code}")
+                except requests.exceptions.RequestException as e:
+                    print(f"Failed to send logs: {e}")
 
             time.sleep(self.send_interval)

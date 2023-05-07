@@ -9,7 +9,7 @@ class CloudLogHandler(Handler):
     app_name: str
 
     def __init__(self, app_name: str, logging_endpoint=None):
-        Handler.__init__(self=self)
+        super().__init__(self=self)
 
         self.app_name = app_name
         self.sender = LogSender(logging_endpoint)
