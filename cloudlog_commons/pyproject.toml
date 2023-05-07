@@ -10,6 +10,7 @@ packages = [{include = "cloudlog_commons"}]
 python = "^3.9"
 boto3 = "^1.26.109"
 requests = "^2.28.2"
+requests-auth-aws-sigv4 = "^0.7"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "7.3.0"
