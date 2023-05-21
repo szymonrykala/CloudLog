@@ -6,8 +6,8 @@ import LogsList from "./LogsList";
 
 
 const queryParamsDefaults: GetLogsQueryParams = {
-    fromDate: new Date(Date.now()).toISOString(),
-    toDate: new Date(Date.now() - (60 * 60 * 24 * 1)).toISOString(),
+    fromDate: new Date(Date.now() - (1000 * 60 * 60 * 2 * 1 )).toISOString(),
+    toDate: new Date(Date.now()).toISOString(),
     severity: 7,
 }
 

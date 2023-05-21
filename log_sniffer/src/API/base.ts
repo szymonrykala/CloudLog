@@ -1,58 +1,73 @@
 import { HttpRequest } from '@aws-sdk/protocol-http';
 import { SignatureV4 } from '@aws-sdk/signature-v4';
-import { fromUtf8 } from '@aws-sdk/util-utf8-browser';
 import { Sha256 } from '@aws-crypto/sha256-js';
-// import { HttpRequest } from '@aws-sdk/protocol-http/dist-types/httpRequest';
+import { Headers } from 'node-fetch';
 
-export interface ServiceFetchParams {
-    endpoint: string
-    method: string
-    headers?: object
-    body?: object
+
+export enum RequestMethod {
+    GET = "GET",
+    PATCH = "PATCH"
 }
 
 
+export interface ServiceFetchParams {
+    endpoint: string
+    method: RequestMethod
+    headers?: any
+    body?: object
+    query: URLSearchParams
+}
+
+export interface APISericeFetch {
+    method: RequestMethod
+    headers: Headers,
+    body?: string
+}
+
 export class APIServiceException extends Error {
-    // constructor(message: string) {
-    //     super(message)
-    //     // this.message = message
-    // }
 }
 
 
 export abstract class APIService {
     protected BASE_URL: string = process.env.REACT_APP_API_URL as string
 
-    protected async fetch(params: ServiceFetchParams) {
-        const resp = await fetch(
-            this.BASE_URL + params.endpoint,
-            {
-                method: params.method,
-                cache: 'no-cache',
-                mode: 'cors',
-                headers: {
-                    ...params.headers,
-                    "User-Agent": process.env?.REACT_APP_NAME as string || "React API Service",
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(params.body)
-            }
-        )
-
+    protected async fetch(url: string, params: APISericeFetch) {
         let data: any
+        let resp: any
+
         try {
+            resp = await fetch(url,
+                {
+                    credentials: "omit",
+                    ...params
+                }
+            )
             data = await resp.json()
-            if (resp.ok) {
-                return data
-            }
         } catch (error) {
-            console.error(error)
-            throw new APIServiceException("Someting happened with server response 😲.")
+            throw new APIServiceException(this.parseStatusCode(403))
         }
 
-        throw new APIServiceException(data?.message || "I'm sorry 😥,\nSomething wrong happened.")
+        if (resp?.ok) {
+            return data
+        }
+
+        console.error(data?.message)
+        throw new APIServiceException(this.parseStatusCode(resp.status))
     }
 
+    private parseStatusCode(status: number): string {
+        switch (status) {
+            case 400:
+                return "Data You provided are not correct 🤔";
+
+            case 401:
+            case 403:
+                return "Credentials You provided are invalid 🔑"
+
+            default:
+                return "Someting wrong happened 🫣 - we will fix it 🤥."
+        }
+    }
 }
 
 
@@ -61,7 +76,7 @@ export const SECRET_KEY = "fvfdjnoiuj98we";
 
 
 export abstract class AWSGatewayService extends APIService {
-    private API_REGION = "eu-central-1"
+    private API_REGION = process.env.REACT_APP_API_REGION as string
     private accessKey: string;
     private secretKey: string;
 
@@ -76,38 +91,52 @@ export abstract class AWSGatewayService extends APIService {
         localStorage.setItem(SECRET_KEY, secretValue)
     }
 
-    private async genAWSSig4(params: ServiceFetchParams): Promise<HttpRequest> {
-        const request: HttpRequest = new HttpRequest(params as any);// as unknown as HttpRequest
 
-        const signer = new SignatureV4({
-            credentials: {
-                accessKeyId: this.accessKey,
-                secretAccessKey: this.secretKey,
-            },
+    private async signRequest(config: HttpRequest) {
+        const credentials = {
+            accessKeyId: this.accessKey,
+            secretAccessKey: this.secretKey,
+        }
+
+        const sigv4 = new SignatureV4({
+            service: 'execute-api',
             region: this.API_REGION,
-            service: "apigateway",
+            credentials,
             sha256: Sha256,
-            // utf8Decoder: fromUtf8,
-        });
-
-
-        const signedRequest = await signer.sign(request);
-        console.log(signedRequest)
-
-        return {...signedRequest, clone: ()=> {}} as HttpRequest
+        })
+        return sigv4.sign(config as HttpRequest)
     }
 
-    protected async fetch(params: ServiceFetchParams): Promise<any> {
-        const sigv4 = await this.genAWSSig4(params)
 
-        return super.fetch({
-            ...params,
+    protected async signedFetch(params: ServiceFetchParams): Promise<any> {
+
+        const querystring = params.query.toString()
+        const url = `${params.endpoint}?${querystring}`
+        const hostname = new URL(this.BASE_URL + url).hostname
+
+
+        const config: Omit<Omit<HttpRequest, 'protocol'>, 'clone'> = {
+            method: params.method,
+            hostname: this.BASE_URL,
+            path: params.endpoint,
             headers: {
-                ...params.headers,
-                'X-Amz-Date': '20220425T123600Z',
-                ...sigv4.headers
+                "Accept": 'application/json',
+                "host": hostname,
+                'Content-Type': 'application/json',
+            },
+            query: Object.fromEntries(params.query.entries())
+        }
+
+        const signedRequest = await this.signRequest(config as HttpRequest)
+
+
+        return super.fetch(
+            this.BASE_URL + url,
+            {
+                method: signedRequest.method as RequestMethod.GET,
+                headers: signedRequest.headers as any as Headers
             }
-        })
+        )
     }
 
 }

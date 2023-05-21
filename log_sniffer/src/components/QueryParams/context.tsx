@@ -27,13 +27,13 @@ export default function QueryParamsContextProvider<T>({
 
     const setParam = useCallback((name: keyof T, value: any) => {
         const newParams = params
-        console.debug(name, value)
+
         if (value === UNSET) {
             delete newParams[name]
         } else {
             newParams[name] = value
         }
-        console.debug(newParams)
+
         setParams({...newParams})
 
     }, [setParams, params])

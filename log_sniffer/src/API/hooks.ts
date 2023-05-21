@@ -8,19 +8,30 @@ const CLService = new CloudLogService()
 
 export function useCloudLogGetLogs(params: GetLogsQueryParams) {
     const [logs, setLogs] = useState<GetLogsResponse>([])
+    const [err, setErr] = useState<string>("")
 
     const fetchLogs = useCallback(async () => {
-        const data = await CLService.getLogs(params)
-        console.debug(data)
-        setLogs(data)
-    },[params])
+        try {
+            const data = await CLService.getLogs(params)
+
+            setLogs(data)
+            setErr("")
+        } catch (e: any) {
+            console.error(e)
+            setErr(e.message)
+        }
+    }, [params, setErr])
+
 
     useEffect(() => {
         fetchLogs()
-        return ()=> setLogs([])
+        return () => {
+            setLogs([]); setErr("");
+        }
     }, [
-        fetchLogs
+        fetchLogs,
+        setErr
     ])
 
-    return logs
+    return { logs, err }
 }

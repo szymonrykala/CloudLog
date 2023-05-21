@@ -1,5 +1,5 @@
 import Log, { Type } from "../models/Log";
-import { AWSGatewayService } from "./base";
+import { AWSGatewayService, RequestMethod } from "./base";
 import { mockedLogs } from "./mockdata";
 
 
@@ -20,18 +20,16 @@ export class CloudLogService extends AWSGatewayService {
 
     public async getLogs(params: GetLogsQueryParams): Promise<GetLogsResponse> {
         const query = new URLSearchParams(Object.entries(params))
-        console.debug(query.toString())
 
-        const logs = await super.fetch({
-            method: "GET",
-            endpoint: `/logs?${query.toString()}`
+        if (process.env.NODE_ENV === "development"){
+            return mockedLogs
+        }
+
+        const logs = this.signedFetch({
+            method: RequestMethod.GET,
+            endpoint: "/dev/logs",
+            query: query
         })
-        // return logs as GetLogsResponse
-        // console.log()
-
-        return mockedLogs
+        return logs
     }
 };
-
-// const CloudLogService = new AWSCloudLogService()
-// export default  CloudLogService
