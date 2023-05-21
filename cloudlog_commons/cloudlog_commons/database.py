@@ -3,6 +3,16 @@ from typing import Generator, Union
 
 import boto3
 
+from .exceptions import CloudLogBaseException
+
+
+class DynamoRequestException(CloudLogBaseException):
+    statusCode:int = 400
+
+    def __init__(self, message):
+        self.message = f"Failed to execute dynamo request: {message}"
+    
+
 
 class DynamoRequest(ABC):
     def execute(self, table: object):
@@ -19,4 +29,7 @@ class DynamoTable:
         self.table = boto3.resource('dynamodb').Table(table_name)
 
     def execute(self, query: DynamoRequest) -> Union[tuple[object], Generator[object, None, None]]:
-        return query.execute(self.table)
+        try:
+            return query.execute(self.table)
+        except Exception as exc:
+            raise DynamoRequestException(exc)
