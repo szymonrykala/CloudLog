@@ -23,10 +23,13 @@ module "read_logs_lambda" {
 
   source_code = local.lambda.read_lambda.source
   layers      = [aws_lambda_layer_version.common_libs.arn]
-  environment = {
-    DYNAMO_TABLE_NAME = aws_dynamodb_table.logs_table.name
-    MAX_COUNT = "50"
-  }
+  environment = merge(
+    local.lambda.read_lambda.env,
+    {
+      DYNAMO_TABLE_NAME = aws_dynamodb_table.logs_table.name
+      MAX_COUNT         = "50"
+    }
+  )
 }
 
 
@@ -43,7 +46,7 @@ data "aws_iam_policy_document" "save_logs_role" {
       "dynamodb:PutItem"
     ]
   }
-  
+
   statement {
     effect = "Allow"
 
@@ -61,15 +64,15 @@ data "aws_iam_policy_document" "save_logs_role" {
 }
 
 module "save_logs_lambda" {
-  source        = "./modules/lambda_service"
-  name          = "save_logs"
-  source_code   = local.lambda.save_lambda.source
-  handler       = "save_logs.${local.lambda.handler}"
+  source      = "./modules/lambda_service"
+  name        = "save_logs"
+  source_code = local.lambda.save_lambda.source
+  handler     = "save_logs.${local.lambda.handler}"
 
   access_policy = data.aws_iam_policy_document.save_logs_role.json
   layers        = [aws_lambda_layer_version.common_libs.arn]
   environment = {
-    SAVE_LOGS = "false"
+    SAVE_LOGS         = "false"
     DYNAMO_TABLE_NAME = aws_dynamodb_table.logs_table.name
   }
 }
@@ -78,7 +81,7 @@ resource "aws_lambda_event_source_mapping" "save_lambda" {
   event_source_arn = aws_sqs_queue.logs_buffer.arn
   function_name    = module.save_logs_lambda.arn
 
-  batch_size = 10
+  batch_size                         = 10
   maximum_batching_window_in_seconds = 60
 }
 

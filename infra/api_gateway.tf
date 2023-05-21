@@ -9,7 +9,8 @@ resource "aws_api_gateway_rest_api" "cloudlog" {
     logs_buffer_queue_name = aws_sqs_queue.logs_buffer.name,
     gateway_iam_role       = aws_iam_role.gateway_role.arn,
     region                 = data.aws_region.current.name,
-    account_id             = data.aws_caller_identity.current.id
+    account_id             = data.aws_caller_identity.current.id,
+    http_allowed_origin    = local.lambda.read_lambda.env.HTTP_REQUEST_ORIGIN
   })
 
   endpoint_configuration {
@@ -22,7 +23,8 @@ resource "aws_api_gateway_deployment" "cloudlog" {
   rest_api_id = aws_api_gateway_rest_api.cloudlog.id
 
   triggers = {
-    redeployment = sha1(jsonencode(aws_api_gateway_rest_api.cloudlog.body))
+    swagger = sha1(jsonencode(aws_api_gateway_rest_api.cloudlog.body))
+    api_policy = sha1(jsonencode(data.aws_iam_policy_document.cloudlog_api_policy_doc.json))
   }
 
   lifecycle {
@@ -40,17 +42,28 @@ resource "aws_api_gateway_stage" "cloudlog_dev" {
 data "aws_iam_policy_document" "cloudlog_api_policy_doc" {
   statement {
     effect = "Allow"
-
     principals {
       type        = "AWS"
       identifiers = [
         "arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/developer"
       ]
     }
-
     actions   = ["execute-api:Invoke"]
     resources = [
-      "arn:aws:execute-api:eu-central-1:${data.aws_caller_identity.current.account_id}:*"
+      "${aws_api_gateway_rest_api.cloudlog.execution_arn}/*/GET/logs",
+      "${aws_api_gateway_rest_api.cloudlog.execution_arn}/*/PUT/logs"
+    ]
+  }
+
+  statement {
+    effect = "Allow"
+    principals {
+      type        = "*"
+      identifiers = ["*"]
+    }
+    actions   = ["execute-api:Invoke"]
+    resources = [
+      "${aws_api_gateway_rest_api.cloudlog.execution_arn}/*/OPTIONS/logs"
     ]
   }
 }

@@ -11,6 +11,44 @@ security:
 
 paths:
   /logs:
+    options:
+      summary: CORS support
+      description: |
+        Enable CORS by returning correct headers
+      tags:
+      - CORS
+      security: []
+      responses:
+        200:
+          description: Default response for CORS method
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+          content: {}
+      x-amazon-apigateway-integration:
+        type: mock
+        requestTemplates:
+          application/json: |
+            {
+              "statusCode" : 200
+            }
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key,x-amz-content-sha256,authority'''
+              method.response.header.Access-Control-Allow-Methods: '''GET,PUT,OPTIONS'''
+              method.response.header.Access-Control-Allow-Origin: '''${http_allowed_origin}'''
+            responseTemplates:
+              application/json: |
+                {}
     get:
       tags:
         - logs
@@ -31,8 +69,18 @@ paths:
         uri: arn:aws:apigateway:${region}:lambda:path/2015-03-31/functions/${get_logs_arn}/invocations
 
       responses:
+        x-amazon-apigateway-integration:
+          responses:
+            default:
+              statusCode: "200"
+              responseParameters:
+                method.response.header.Access-Control-Allow-Origin: true
+
         "200":
           description: users list
+          headers:
+            "Access-Control-Allow-Origin":
+              schema: string
           content:
             application/json:
               schema:

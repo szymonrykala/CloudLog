@@ -39,5 +39,5 @@ variable "access_policy" {
 variable "runtime" {
   description = "lambda runtime"
   type        = string
-  default     = "python3.9"
+  default     = "python3.10"
 }
