@@ -6,7 +6,7 @@ from read_logs.request import RequestParams
 
 @pytest.mark.parametrize("request_params",(
     RequestParams(**{
-        "service": "test_service",
+        "unit": "test_service",
         "hostname": "my-machine",
         "type": "application"
     }),

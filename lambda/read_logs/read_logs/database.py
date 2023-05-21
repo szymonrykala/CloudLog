@@ -24,7 +24,7 @@ class ReadRequest(DynamoRequest):
             "#severity <= :severity"
         ))
         
-        for f in ('service', 'hostname', 'type'):
+        for f in ('unit', 'hostname', 'type'):
             value = params.__getattribute__(f)
             if value:
                 self.__att_names[f"#{f}"] = f

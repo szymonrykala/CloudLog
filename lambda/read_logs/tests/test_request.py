@@ -37,7 +37,7 @@ def test_field_value_parser_date(field, success, mocked_parser):
     ({}, True),
     (None, True),
     ({
-        "service": "test_service",
+        "unit": "test_service",
         "hostname": "my-machine",
         "unknown-key": "value",
         "type": "application"
@@ -49,7 +49,10 @@ def test_field_value_parser_date(field, success, mocked_parser):
         "fromDate": "2012-14-11T10:00:11"
     }, False),
     ({
-        "fromDate": "2012-10-11T10:00:11"
+        "fromDate": "2023-05-21T12:51:50.235Z"
+    }, True),
+     ({
+        "fromDate": datetime.utcnow().isoformat()
     }, True),
 ))
 def test_request_params(event_params, success):
@@ -62,7 +65,7 @@ def test_request_params(event_params, success):
         assert isinstance(params.fromDate, datetime)
         assert isinstance(params.toDate, datetime)
         
-        assert params.fromDate < params.toDate
+        assert params.fromDate.timestamp() < params.toDate.timestamp()
 
         params_dict = params.asdict()
         assert isinstance(params_dict, dict)
@@ -70,9 +73,9 @@ def test_request_params(event_params, success):
         if not event_params:
             assert params_dict["severity"] == 0
             assert params_dict["fromDate"] < datetime.utcnow()
-            assert params_dict["toDate"] <= datetime.utcnow()
+            assert params_dict["toDate"] > datetime.utcnow()
 
-            for field in ('service', 'hostname', 'type'):
+            for field in ('unit', 'hostname', 'type'):
                 assert field not in params_dict
                 assert field in asdict(params)
 

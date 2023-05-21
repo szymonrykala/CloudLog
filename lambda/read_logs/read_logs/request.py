@@ -9,12 +9,12 @@ from .exceptions import BadRequestParameterValue
 
 @dataclass
 class RequestParams:
-    service: Optional[str] = None
+    unit: Optional[str] = None
     hostname: Optional[str] = None
     type: Optional[LogType] = None
     severity: int = field(default=0)
-    fromDate: datetime = field(default=datetime.utcnow() - timedelta(hours=1))
-    toDate: datetime = field(default=datetime.utcnow())
+    toDate: datetime = field(default=datetime.utcnow() + timedelta(minutes=10))
+    fromDate: datetime = field(default=toDate.default - timedelta(hours=1, minutes=10))
 
     @classmethod
     def from_event(cls, event: dict):
@@ -49,7 +49,7 @@ class FieldValueParser:
 
     def date(self, field: str) -> datetime:
         try:
-            return datetime.fromisoformat(self.params.get(field))
+            return datetime.fromisoformat(self.params.get(field).replace("Z","+00:00"))
         except Exception:
             raise BadRequestParameterValue(
                 f"Date field '{field}' has to be in ISO format"

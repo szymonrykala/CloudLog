@@ -10,6 +10,7 @@ packages = [{include = "read_logs"}]
 python = "^3.10"
 cloudlog-commons = {path = "/home/szymon/Projects/CloudLog/cloudlog_commons", develop = true}
 boto3 = "^1.26.109"
+pytest = "7.3.0"
 
 
 [tool.poetry.group.dev.dependencies]
