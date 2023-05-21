@@ -41,7 +41,7 @@ terraform apply
 
 echo "Infrastrucutre deployment done"
 
-exit #temporary
+# exit #temporary
 
 cd ../log_sniffer
 npm run build
