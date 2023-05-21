@@ -16,7 +16,7 @@ def handler(event:dict, context:dict):
     if len(requests):
         logger.info(f"Recieved {len(requests)} parsed requests")
 
-        with ThreadPoolExecutor(len(requests)) as exec:
+        with ThreadPoolExecutor(10) as exec:
             failed_ids = exec.map(message_async_handler, requests)
 
             for id in failed_ids:
