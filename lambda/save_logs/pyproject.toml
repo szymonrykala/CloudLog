@@ -10,11 +10,9 @@ packages = [{include = "save_logs"}]
 python = "^3.10"
 cloudlog-commons = {path = "/home/szymon/Projects/CloudLog/cloudlog_commons", develop = true}
 boto3 = "^1.26.109"
-pytest = "7.3.0"
-
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^7.3.0"
+pytest = "7.3.0"
 autopep8 = "^2.0.2"
 black = "^23.3.0"
 moto = "^4.1.7"
