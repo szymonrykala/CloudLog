@@ -21,7 +21,7 @@ export class CloudLogService extends AWSGatewayService {
     public async getLogs(params: GetLogsQueryParams): Promise<GetLogsResponse> {
         const query = new URLSearchParams(Object.entries(params))
 
-        if (process.env.NODE_ENV === "development"){
+        if (process.env.NODE_ENV === "development" || this.credentialsAreDemo()) {
             return mockedLogs
         }
 

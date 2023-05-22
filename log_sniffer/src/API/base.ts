@@ -107,6 +107,9 @@ export abstract class AWSGatewayService extends APIService {
         return sigv4.sign(config as HttpRequest)
     }
 
+    protected credentialsAreDemo(): boolean {
+        return this.accessKey === "demo" && this.secretKey === "demo"
+    }
 
     protected async signedFetch(params: ServiceFetchParams): Promise<any> {
 
