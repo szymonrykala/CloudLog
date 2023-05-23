@@ -1,7 +1,7 @@
 import platform
 from logging import Handler, LogRecord
 
-from cloudlog_commons import Log, LogQueue, LogType, queue
+from cloudlog_commons import Log, LogQueue, LogType
 
 
 class CloudLogHandler(Handler):
@@ -9,6 +9,7 @@ class CloudLogHandler(Handler):
     app_name: str
 
     def __init__(self, app_name: str):
+        from cloudlogger import queue
         super().__init__()
 
         self.app_name = app_name
