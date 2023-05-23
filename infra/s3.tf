@@ -26,12 +26,12 @@ resource "aws_s3_bucket_policy" "allow_hosting_access_policy" {
   policy = data.aws_iam_policy_document.allow_hosting_access.json
 }
 
-resource "aws_s3_bucket_acl" "example_bucket_acl" {
+resource "aws_s3_bucket_acl" "app_hosting_acl" {
   bucket = aws_s3_bucket.app_hosting.id
   acl    = "public-read"
 }
 
-resource "aws_s3_bucket_website_configuration" "example" {
+resource "aws_s3_bucket_website_configuration" "app_hosting" {
   bucket = aws_s3_bucket.app_hosting.id
 
   index_document {
@@ -41,15 +41,6 @@ resource "aws_s3_bucket_website_configuration" "example" {
   error_document {
     key = "error.html"
   }
-
-  #   routing_rule {
-  #     condition {
-  #       key_prefix_equals = "/"
-  #     }
-  #     redirect {
-  #       replace_key_prefix_with = "documents/"
-  #     }
-  #   }
 }
 
 resource "aws_s3_bucket_cors_configuration" "app_cors" {

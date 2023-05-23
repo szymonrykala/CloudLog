@@ -4,7 +4,8 @@ from moto import mock_dynamodb
 import boto3
 
 OS_DICT = {
-    'DYNAMO_TABLE_NAME': "test_table"
+    'DYNAMO_TABLE_NAME': "test_table",
+    "HTTP_REQUEST_ORIGIN": "http://example.domain.com"
 }
 
 

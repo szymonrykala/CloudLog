@@ -1,19 +1,32 @@
-import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
-import reportWebVitals from './reportWebVitals';
+import { CssVarsProvider } from '@mui/joy/styles/CssVarsProvider';
+import StyledEngineProvider from '@mui/joy/styles/StyledEngineProvider';
+import GlobalStyles from '@mui/joy/GlobalStyles';
+import appTheme from "./theme"
+
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
+  <>
+    {/* <React.StrictMode> */}
+    <StyledEngineProvider injectFirst>
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
+      <CssVarsProvider disableTransitionOnChange theme={appTheme}>
+        <GlobalStyles
+          styles={(theme) => ({
+            body: {
+              margin: 0,
+              fontFamily: theme.vars.fontFamily.body,
+            },
+          })}
+        />
+        <App />
+      </CssVarsProvider>
+    </StyledEngineProvider>
+    {/* </React.StrictMode> */}
+  </>
+);

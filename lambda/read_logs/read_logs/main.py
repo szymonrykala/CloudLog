@@ -12,6 +12,7 @@ dynamo = DynamoTable(DYNAMO_TABLE_NAME)
 
 
 def handler(event, context):
+    logger.debug(event)
     try:
         params = RequestParams.from_event(event)
         logger.info(f"Recieved parsed query {params}")
@@ -22,4 +23,10 @@ def handler(event, context):
         return HTTPResponse.success(logs)
 
     except CloudLogBaseException as exc:
+        logger.exception(exc)
         return HTTPResponse.error(exc)
+    
+    except Exception as exc:
+        return HTTPResponse.error(
+            CloudLogBaseException()
+        )

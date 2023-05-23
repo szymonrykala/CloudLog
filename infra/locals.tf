@@ -19,6 +19,9 @@ locals {
 
     read_lambda = {
       source = "../lambda/read_logs/"
+      env = {
+        HTTP_REQUEST_ORIGIN = "http://${aws_s3_bucket_website_configuration.app_hosting.website_endpoint}"
+      }
     }
 
     save_lambda = {
