@@ -1,13 +1,22 @@
+import logging
+import os
+
 import pytest
-from cloudlogger import CloudLogHandler
+
 from cloudlog_commons import LogQueue
+
 
 @pytest.mark.parametrize("log_count", (
     (0),
     (5),
 ))
-def test_local_handler(log_count: int):
-    import logging
+def test_local_handler(monkeypatch: pytest.MonkeyPatch, log_count: int):
+    envs = {
+        'CLOUDLOG_ENDPOINT': ''
+    }
+    monkeypatch.setattr(os, 'environ', envs)
+
+    from cloudlogger import CloudLogHandler
 
     logger = logging.getLogger('test_logger')
     assert len(logger.handlers) == 0
