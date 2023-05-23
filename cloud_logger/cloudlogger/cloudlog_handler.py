@@ -1,18 +1,18 @@
-from logging import Handler, LogRecord
-import os
 import platform
+from logging import Handler, LogRecord
 
-from cloudlog_commons import LogSender, Log, LogType
+from cloudlog_commons import Log, LogQueue, LogType, queue
+
 
 class CloudLogHandler(Handler):
-    sender: LogSender
+    queue: LogQueue
     app_name: str
 
-    def __init__(self, app_name: str, logging_endpoint=None):
-        super().__init__(self=self)
+    def __init__(self, app_name: str):
+        super().__init__()
 
         self.app_name = app_name
-        self.sender = LogSender(logging_endpoint)
+        self.queue = queue
 
     def emit(self, record: LogRecord):
         uname: platform.uname_result = platform.uname()
@@ -27,4 +27,4 @@ class CloudLogHandler(Handler):
             LogType.LOGGER,
         )
 
-        self.sender.write_log(log)
+        self.queue.push(log)

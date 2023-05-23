@@ -1,52 +1,43 @@
 import os
-import queue
 import threading
 import time
-from queue import Queue
 
 import requests
 from requests_auth_aws_sigv4 import AWSSigV4
 
-from . import Log
+from .log_queue import LogQueue
 
-# TODO: If we want to use logger there instead of prints, we have to ensure that its not using our handler, otherwise we will get recursion loop
 class LogSender(threading.Thread):
-    stopped: bool = False
-    log_queue: Queue = Queue()
+    # Static stuff
+    queue: LogQueue = None
+    @classmethod
+    def attach_queue(cls, queue: LogQueue):
+        cls.queue = queue
 
+
+
+    stopped: bool = False
     endpoint: str
     batch_size: int
     send_interval: int
 
     def __init__(
             self,
-            endpoint=os.environ["CLOUDLOG_ENDPOINT"],
-            batch_size=os.environ.get("CLOUDLOG_BATCH_SIZE", 25),
-            send_interval=os.environ.get("CLOUDLOG_SEND_INTERVAL", 10)
+            endpoint=None,
+            batch_size=None,
+            send_interval=None
         ):
         super().__init__()
-        self.endpoint = endpoint
-        self.batch_size = batch_size
-        self.send_interval = send_interval
+        self.endpoint = endpoint or os.environ["CLOUDLOG_ENDPOINT"]
+        self.batch_size = batch_size or os.environ.get("CLOUDLOG_BATCH_SIZE", 25)
+        self.send_interval = send_interval or os.environ.get("CLOUDLOG_SEND_INTERVAL", 10)
 
     def stop(self):
         self.stopped = True
 
-    def write_log(self, log: Log) -> bool:
-        self.log_queue.put(log)
-
-    def write_logs(self, logs: list[Log]) -> bool:
-        for log in logs:
-            self.write_log(log)
-
     def run(self):
         while not self.stopped:
-            batch = []
-            while len(batch) < self.batch_size:
-                try:
-                    batch.append(self.log_queue.get(block=False)) # No need to block, we rerun it every now and then anyway
-                except queue.Empty:
-                    break
+            batch = LogSender.queue.pop(self.batch_size) if LogSender.queue else []
 
             if len(batch) > 0:
                 try:
