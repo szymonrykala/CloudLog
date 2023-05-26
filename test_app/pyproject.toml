@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "test-app"
+version = "0.1.0"
+description = ""
+authors = ["Szymon Rykala <szymonrykala@gmail.com>"]
+readme = "README.md"
+packages = [{include = "test_app"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+cloudlog-commons = {path = "../cloudlog_commons", develop = true}
+cloud-logger = {path = "../cloud_logger", develop = true}
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
