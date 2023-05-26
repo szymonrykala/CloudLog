@@ -3,7 +3,7 @@ import os
 
 import pytest
 
-from cloudlog_commons import LogQueue
+from cloudlog_commons.log_queue import LogQueue
 
 @pytest.mark.parametrize("log_count, logger", (
     (0, logging.getLogger('test_logger')),
@@ -17,7 +17,7 @@ def test_handler(monkeypatch: pytest.MonkeyPatch, log_count: int, logger: loggin
     }
     monkeypatch.setattr(os, 'environ', envs)
 
-    from cloudlogger import CloudLogHandler
+    from cloud_logger.handler import CloudLogHandler
 
     # Filter out diffrent handlers and assert that there are not yet CloudLogHandlers
     assert len([handler for handler in logger.handlers if isinstance(handler, CloudLogHandler)]) == 0
