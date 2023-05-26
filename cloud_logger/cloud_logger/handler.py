@@ -1,19 +1,20 @@
 import platform
 from logging import Handler, LogRecord
 
-from cloudlog_commons import Log, LogQueue, LogType
+from cloudlog_commons import LogType, Log
+from cloudlog_commons.log_queue import LogQueue
 
 
 class CloudLogHandler(Handler):
     queue: LogQueue
-    app_name: str
 
     def __init__(self, app_name: str):
-        from cloudlogger import queue
         super().__init__()
-
         self.app_name = app_name
-        self.queue = queue
+
+    @classmethod
+    def attach_queue(cls, queue: LogQueue):
+        cls.queue = queue
 
     def emit(self, record: LogRecord):
         uname: platform.uname_result = platform.uname()

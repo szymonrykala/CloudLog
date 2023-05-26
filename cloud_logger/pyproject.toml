@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "cloudlogger"
+name = "cloud_logger"
 version = "0.1.0"
 description = ""
 authors = ["Szymon Rykala <szymonrykala@gmail.com>"]
@@ -7,6 +7,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
+cloudlog-commons = {path = "../cloudlog_commons", develop = true}
 
 
 [build-system]
