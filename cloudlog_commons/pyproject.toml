@@ -4,7 +4,7 @@ version = "0.1.1"
 description = "common library for CLoudLog lambdas"
 authors = ["Szymon Rykala <szymonrykala@gmail.com>"]
 readme = "README.md"
-packages = [{include = "cloudlog_commons"}]
+packages = []
 
 [tool.poetry.dependencies]
 python = "^3.9"
