@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "logger-daemon"
-version = "0.1.0"
+version = "0.1.62"
 description = ""
 authors = ["Szymon Rykala <szymonrykala@gmail.com>"]
 readme = "README.md"
@@ -9,6 +9,7 @@ packages = [{include = "logger_daemon"}]
 [tool.poetry.dependencies]
 python = "^3.9"
 pytest = "7.3.0"
+requests = "^2.31.0"
 
 
 [build-system]
