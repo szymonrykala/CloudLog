@@ -1,24 +1,24 @@
 import os
+import sys
 import threading
-import queue
 import time
 import subprocess
-import requests
 import platform
 import json
-from cloudlog_commons import Log, OS, LogType
+from cloudlog_commons import Log, OS, LogType, LogQueue, LogSender
 
 class LogWorker(threading.Thread):
-    def __init__(self, num_logs, batch_size, time_in_minutes):
+    
+    def __init__(self, num_logs, interval):
         super().__init__()
         self.num_logs = num_logs
-        self.batch_size = batch_size
-        self.time_in_minutes = time_in_minutes
+        self.interval = interval
         self.stopped = False
         self.batch = []
 
     def stop(self):
         self.stopped = True
+        LogSender.stop()
 
     def get_logs(self):
         if platform.system() == 'Windows':
@@ -27,8 +27,8 @@ class LogWorker(threading.Thread):
             logs = self.get_linux_logs()
         return logs
 
-    def get_windows_logs(self): #Get-WinEvent -FilterHashtable @{Logname="Application","System"; StartTime=(Get-Date).AddMinutes(-60)} -MaxEvents 100 | Select-Object @{Name="TimeCreated";Expression={$_.TimeCreated.ToUniversalTime().Subtract((Get-Date "1/1/1970")).TotalSeconds}}, Level, Message, ProviderName, MachineName, ContainerLog | ConvertTo-Json
-        cmd = f"powershell -Command Get-WinEvent -FilterHashtable @{{logname=\'Application\',\'System\'; StartTime=(Get-Date).AddMinutes(-{self.time_in_minutes})}} -MaxEvents {self.num_logs} | Select-Object @{{Name=\'TimeCreated\';Expression={{$_.TimeCreated.ToUniversalTime().Subtract((Get-Date \'1/1/1970\')).TotalSeconds}}}}, Level, Message, ProviderName, MachineName, ContainerLog | ConvertTo-Json"
+    def get_windows_logs(self): #Get-WinEvent -FilterHashtable @{Logname="Application","System"; StartTime=(Get-Date).AddSeconds(-60)} -MaxEvents 100 | Select-Object @{Name="TimeCreated";Expression={$_.TimeCreated.ToUniversalTime().Subtract((Get-Date "1/1/1970")).TotalSeconds}}, Level, Message, ProviderName, MachineName, ContainerLog | ConvertTo-Json
+        cmd = f"powershell -Command Get-WinEvent -FilterHashtable @{{logname=\'Application\',\'System\'; StartTime=(Get-Date).AddSeconds(-{self.interval})}} -MaxEvents {self.num_logs} | Select-Object @{{Name=\'TimeCreated\';Expression={{$_.TimeCreated.ToUniversalTime().Subtract((Get-Date \'1/1/1970\')).TotalSeconds}}}}, Level, Message, ProviderName, MachineName, ContainerLog | ConvertTo-Json"
         result = []
         try:
             output = subprocess.check_output(cmd, encoding='utf-8', errors='replace')
@@ -45,13 +45,13 @@ class LogWorker(threading.Thread):
                     log, 
                     LogType.SYSTEM.value if (log['ContainerLog'] == "System") else LogType.APP.value if (log['ContainerLog'] == "Application") else LogType.LOGGER.value))
             return result
-        except subprocess.CalledProcessError as e:
-            print(f"PWSH Error / no logs")
+        except:
+            print(f"no logs / error")
             return None
     
-    def get_linux_logs(self):   #cmd = f'journalctl --lines=100 --since="60 min ago" --output=json | jq \'.[] | {{os: "Linux", severity: .PRIORITY, message: .MESSAGE, timestamp: (.__REALTIME_TIMESTAMP / 1000000 | floor | str | tonumber), hostname: ._HOSTNAME, unit: ._EXE}}\''
-        cmd = f'journalctl --lines={self.num_logs} --since="{self.time_in_minutes} min ago" --output=json | jq \'.[] | {{os: "Linux", severity: .PRIORITY, message: .MESSAGE, timestamp: (.__REALTIME_TIMESTAMP / 1000000 | floor | str | tonumber), hostname: ._HOSTNAME, unit: ._EXE}}\''
-        result = ""
+    def get_linux_logs(self):   #cmd = f'journalctl --lines=100 --since="-10s" --output=json | jq \'.[] | {{os: "Linux", severity: .PRIORITY, message: .MESSAGE, timestamp: (.__REALTIME_TIMESTAMP / 1000000 | floor | str | tonumber), hostname: ._HOSTNAME, unit: ._EXE}}\''
+        cmd = f'journalctl --lines={self.num_logs} --since="-{self.interval}s" --output=json | jq \'.[] | {{os: "Linux", severity: .PRIORITY, message: .MESSAGE, timestamp: (.__REALTIME_TIMESTAMP / 1000000 | floor | str | tonumber), hostname: ._HOSTNAME, unit: ._EXE}}\''
+        result = []
         try:
             output = subprocess.check_output(cmd, encoding='utf-8', errors='replace', executable="/bin/bash")
             logs = json.loads(output)
@@ -65,72 +65,46 @@ class LogWorker(threading.Thread):
                     log['hostname'],
                     log['unit'],
                     log,
-                    LogType.APP.value if "snap" in log['unit'] or "opt" in log['unit'] else LogType.SYSTEM.value))
+                    LogType.APP.value if "snap" in log['unit'] or "opt" in log['unit'] else LogType.LOGGER.value))
             return result
         except:
-            print("no logs")
+            print("no logs / error")
             return None
 
     def run(self):
         while not self.stopped:    
             logs = self.get_logs()
             if logs is not None:
-                self.batch.extend(logs)  
-            if len(self.batch) >= self.batch_size:
-                log_queue.put(self.batch)
-                self.batch = [] 
-            time.sleep(self.time_in_minutes*60)
+                queue = LogQueue.push(logs)
+                LogSender.attach_queue(queue)
+            LogSender.run()
+            time.sleep(self.interval)
 
-class LogSender(threading.Thread):
-    def __init__(self, endpoint):
-        super().__init__()
-        self.endpoint = endpoint
-        self.stopped = False
-
-    def stop(self):
-        self.stopped = True
-
-    def run(self):
-        while not self.stopped or not log_queue.empty():
-            try:
-                batch = log_queue.get(timeout=1)
-            except queue.Empty:
-                continue
-            logs = [log.to_dict() for log in batch]
-            try:
-                json_data = json.dumps(logs)
-
-                response = requests.post(self.endpoint, json=json_data)
-
-                if response.status_code == 200:
-                    num_logs = len(logs)
-                    print(f"Sent batch with {num_logs} logs")
-                else:
-                    print(f"Failed to send logs with status code {response.status_code}")
-            except requests.exceptions.RequestException as e:
-                print(f"Failed to send logs: {e}")
-
-            time.sleep(10)
-
-
-if __name__ == '__main__':
-    time_in_minutes = int(os.environ.get('TIME_IN_MINUTES', 1)) #time in minutes since when a single powershell/bash command gets the logs
+def run_log_service():
+    interval = int(os.environ.get('interval', 10)) #time in sec since when a single powershell/bash command gets the logs
     num_logs = int(os.environ.get('NUM_LOGS', 100)) #max number of logs from single pwsh/bash call  
-    batch_size = int(os.environ.get('BATCH_SIZE', 10))  #how many logs do you want to send in one request
-    endpoint = "http://localhost:5000/logs"
 
-    log_queue = queue.Queue()
-    log_worker = LogWorker(num_logs, batch_size, time_in_minutes)
-    log_sender = LogSender(endpoint)
-
+    log_worker = LogWorker(num_logs, interval)
+    
     try:
         log_worker.start()
-        log_sender.start()
         input("Press enter to stop...")
     except KeyboardInterrupt:
         print("Stopping...")
     finally:
         log_worker.stop()
         log_worker.join()
-        log_sender.stop()
-        log_sender.join()
+
+if __name__ == '__main__':
+    if sys.argv[1] == 'background':
+        # Run the log service in the background Linux only
+        pid = os.fork()
+        if pid > 0:
+            # Parent process, exit
+            sys.exit()
+        elif pid == 0:
+            # Child process, continue running
+            run_log_service()
+    else:
+        # Run the log service in the foreground
+        run_log_service()
