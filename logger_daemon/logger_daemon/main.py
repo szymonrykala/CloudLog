@@ -19,6 +19,7 @@ class LogWorker(threading.Thread):
     def stop(self):
         self.stopped = True
         LogSender.stop()
+        LogSender.join()
 
     def get_logs(self):
         if platform.system() == 'Windows':
@@ -77,7 +78,7 @@ class LogWorker(threading.Thread):
             if logs is not None:
                 queue = LogQueue.push(logs)
                 LogSender.attach_queue(queue)
-            LogSender.run()
+            LogSender.start()
             time.sleep(self.interval)
 
 def run_log_service():
@@ -96,7 +97,7 @@ def run_log_service():
         log_worker.join()
 
 if __name__ == '__main__':
-    if sys.argv[1] == 'background':
+    if sys.argv[0] == 'background':
         # Run the log service in the background Linux only
         pid = os.fork()
         if pid > 0:
