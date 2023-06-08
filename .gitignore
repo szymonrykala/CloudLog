@@ -11,6 +11,8 @@ credentials
 
 __pycache__/
 poetry.lock
+*.service
+*/dist
 
 .terraform*
 *.tfstate
