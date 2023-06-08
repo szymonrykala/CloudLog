@@ -4,11 +4,13 @@ version = "0.1.1"
 description = "common library for CLoudLog lambdas"
 authors = ["Szymon Rykala <szymonrykala@gmail.com>"]
 readme = "README.md"
-packages = [{include = "cloudlog_commons"}]
+packages = []
 
 [tool.poetry.dependencies]
 python = "^3.9"
 boto3 = "^1.26.109"
+requests = "^2.28.2"
+requests-auth-aws-sigv4 = "^0.7"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "7.3.0"
