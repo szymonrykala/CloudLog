@@ -6,12 +6,13 @@ ifeq ($(DIST_DIR),)
 	DIST_DIR := $(DEFAULT_DIR)
 endif
 
-flow: hello system_dependencies build_package end
-install: __create_runner_package __prepare_systemd_file __register_service
-
 
 hello:
-	@echo "Building CloudLog daemon...\n"
+	@echo "make build\nmake install"
+
+
+build: system_dependencies build_package end
+install: __create_runner_package __prepare_systemd_file __register_service
 
 
 system_dependencies:
@@ -60,6 +61,7 @@ build_package: __tests
 __create_runner_package:
 	@if [ $$DEFAULT_DIR == $$DIST_DIR ]; then\
 		cd $(DIST_DIR);\
+		rm -r ./runner;\
 		mkdir runner;\
 		cd runner;\
 		poetry new .;\
