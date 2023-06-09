@@ -44,7 +44,8 @@ class ReadRequest(DynamoRequest):
         response = table.scan(
             ExpressionAttributeNames=self.__att_names,
             ExpressionAttributeValues=self.__att_values,
-            FilterExpression=self.__exp
+            FilterExpression=self.__exp,
+            Limit=self.params.limit
         )
 
         return tuple(DBLog(**item) for item in response["Items"])
