@@ -4,9 +4,9 @@ import time
 import requests
 from requests_auth_aws_sigv4 import AWSSigV4
 
-from cloudlog_commons.log import Log
+from cloudlog_commons.shared import Log
 
-from .log_queue import LogQueue
+from cloudlog_commons.services import LogQueue
 
 
 class LogSender(threading.Thread):

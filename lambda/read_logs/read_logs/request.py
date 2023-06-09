@@ -2,7 +2,7 @@ from dataclasses import asdict, dataclass, field
 from datetime import datetime, timedelta
 from typing import Optional
 
-from cloudlog_commons.log import LogType
+from cloudlog_commons.shared import LogType
 
 from .exceptions import BadRequestParameterValue
 

@@ -1,6 +1,6 @@
 from queue import Queue, Empty as QueueEmptyExpcetion
 
-from .log import Log
+from cloudlog_commons.shared import Log
 
 
 class LogQueue(Queue):

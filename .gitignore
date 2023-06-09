@@ -13,6 +13,7 @@ __pycache__/
 poetry.lock
 *.service
 */dist
+logs
 
 .terraform*
 *.tfstate

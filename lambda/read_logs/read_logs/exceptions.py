@@ -1,4 +1,4 @@
-from cloudlog_commons.exceptions import CloudLogBaseException
+from cloudlog_commons.cloud.exceptions import CloudLogBaseException
 
 
 class BadRequestParameterValue(CloudLogBaseException):

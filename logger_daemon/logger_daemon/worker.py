@@ -4,10 +4,9 @@ import subprocess
 import threading
 import time
 
-from cloudlog_commons.log_queue import LogQueue
 from logs import LinuxLog, WindowsLog
 
-from logging import getLogger
+from cloudlog_commons.services import LogQueue
 
 
 class LogWorker(threading.Thread):
@@ -32,9 +31,9 @@ class LogWorker(threading.Thread):
     @property
     def linux_cmd(self):
         return [
-            "/bin/bash",
+            "bash",
             "-c",
-            f"journalctl --since=-{self.interval}s --output=json | cat",
+            f"journalctl --since=-{self.interval}s --output=json | jq -c -s .",
         ]
 
     @property
@@ -57,8 +56,13 @@ class LogWorker(threading.Thread):
 
     def __get_logs(self):
         try:
-            process = subprocess.Popen(self.__CMD)
-            output, error = process.communicate()
+            process = subprocess.Popen(
+                self.__CMD,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                encoding="utf8"
+            )
+            output, error = process.communicate()           
             if error:
                 raise Exception(f"Command error: {error}")
 

@@ -1,9 +1,10 @@
-from decimal import Decimal
 import json
 from dataclasses import asdict, dataclass, field
+from decimal import Decimal
 
-from cloudlog_commons import DynamoRequest, DBLog, logger
-from cloudlog_commons.exceptions import LogEntryValidationError
+from cloudlog_commons.cloud import DBLog, DynamoRequest
+from cloudlog_commons.cloud.exceptions import LogEntryValidationError
+from cloudlog_commons.shared import logger
 
 
 @dataclass

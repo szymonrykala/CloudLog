@@ -2,11 +2,13 @@ import json
 import re
 from dataclasses import dataclass
 
-from cloudlog_commons.log import OS, Log, LogType
+from cloudlog_commons.shared import OS, Log, LogType
 
 
 @dataclass
 class WindowsLog(Log):
+
+    @classmethod
     def from_dict(cls, log: dict):
         log_type_map = {
             "System": LogType.SYSTEM.value,
@@ -27,17 +29,19 @@ class WindowsLog(Log):
 
 @dataclass
 class LinuxLog(Log):
+
+    @classmethod
     def from_dict(cls, log: dict):
         log_type = log_type = LogType.SYSTEM.value
 
-        if re.search(r"(snap)|(opt)", log["unit"]):
+        if re.search(r"(snap)|(opt)", log["_EXE"]):
             log_type = LogType.APP.value
 
         return cls(
             os=OS.LINUX.value,
             severity=log["PRIORITY"],
             message=log["MESSAGE"],
-            timestamp=log["__REALTIME_TIMESTAMP"] / 1_000_000,
+            timestamp=int(log["__REALTIME_TIMESTAMP"]) / 1_000_000,
             hostname=log["_HOSTNAME"],
             unit=log["_EXE"],
             raw=json.dumps(log),

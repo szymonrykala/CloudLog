@@ -1,9 +1,10 @@
 import json
-from dataclasses import asdict, dataclass
 import os
+from dataclasses import asdict, dataclass
 
-from cloudlog_commons import DBLog
-from cloudlog_commons.exceptions import CloudLogBaseException
+from cloudlog_commons.cloud import DBLog
+from cloudlog_commons.cloud.exceptions import CloudLogBaseException
+
 
 HTTP_ORIGIN = os.environ["HTTP_REQUEST_ORIGIN"]
 
@@ -14,13 +15,11 @@ class HTTPResponse:
     body: str
     headers: dict
 
-    def __init__(self, code:int, body:dict) -> None:
+    def __init__(self, code: int, body: dict) -> None:
         self.statusCode = code
         self.body = json.dumps(body)
-        self.headers = {
-            "Access-Control-Allow-Origin": HTTP_ORIGIN
-        }
-        
+        self.headers = {"Access-Control-Allow-Origin": HTTP_ORIGIN}
+
     @classmethod
     def success(cls, records: tuple[DBLog]):
         body = tuple(asdict(record) for record in records)

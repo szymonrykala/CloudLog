@@ -1,12 +1,12 @@
 import platform
 from logging import Handler, LogRecord
 
-from cloudlog_commons import LogType, Log
-from cloudlog_commons.log_queue import LogQueue
+from cloudlog_commons.services import LogQueue
+from cloudlog_commons.shared import Log, LogType
 
 
 class CloudLogHandler(Handler):
-    queue: LogQueue
+    queue: LogQueue = None
 
     def __init__(self, app_name: str):
         super().__init__()
