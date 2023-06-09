@@ -8,7 +8,7 @@ from cloud_logger import CloudLogHandler
 logger = logging.getLogger("Marek")
 
 handlers = (
-    CloudLogHandler("test-app", endpoint="local", send_interval=10),
+    CloudLogHandler("test-app", send_interval=15),
     logging.StreamHandler(sys.stdout),
 )
 
@@ -17,10 +17,10 @@ for handler in handlers:
 
 logger.setLevel(logging.DEBUG)
 
-logger.info("Program starting ...")
+logger.info("TEST-APP - Program starting ...")
 
 # while True:
-for  i in range(5):
-    logger.info("taka sobie wiadomość")
+for  i in range(8):
+    logger.info(f"TEST-APP - taka sobie wiadomość nr {i}")
 
     sleep(3)

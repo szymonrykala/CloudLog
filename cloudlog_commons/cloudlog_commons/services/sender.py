@@ -33,11 +33,14 @@ class LogSender(threading.Thread):
         if len(batch) > 0:
             self.__logger.info(f"{self.__class__.__name__} - Sending batch size={len(batch)}")
             try:
-                # Uses same env variables as AWS CLI
                 auth = AWSSigV4("execute-api")
-                response = requests.put(
+                body = tuple(asdict(record) for record in batch)
+                self.__logger.debug(body)
+
+                response = requests.request(
+                    "PUT",
                     self.endpoint,
-                    json=json.dumps(tuple(asdict(record) for record in batch)),
+                    json=body,
                     auth=auth
                 )
 

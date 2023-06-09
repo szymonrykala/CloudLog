@@ -17,9 +17,9 @@ class WindowsLog(Log):
 
         return cls(
             os=OS.WINDOWS.value,
-            severity=log["Level"],
+            severity=int(log["Level"]),
             message=log["Message"],
-            timestamp=log["TimeCreated"],
+            timestamp=int(log["TimeCreated"]),
             hostname=log["MachineName"],
             unit=log["ProviderName"],
             raw=json.dumps(log),
@@ -39,7 +39,7 @@ class LinuxLog(Log):
 
         return cls(
             os=OS.LINUX.value,
-            severity=log["PRIORITY"],
+            severity=int(log["PRIORITY"]),
             message=log["MESSAGE"],
             timestamp=int(log["__REALTIME_TIMESTAMP"]) / 1_000_000,
             hostname=log["_HOSTNAME"],

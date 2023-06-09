@@ -1,3 +1,4 @@
+import json
 import platform
 from logging import Handler, LogRecord
 
@@ -23,17 +24,28 @@ class CloudLogHandler(Handler):
         if platform.system() == "Windows":
             return OS.WINDOWS.value
         return OS.LINUX.value
+    
+    def __map_severity(self, python_lvl:int) -> int:
+        return {
+            0: 7,
+            10: 7,
+            20: 6,
+            30: 4,
+            40: 3,
+            50: 2
+        }[python_lvl]
+
 
     def emit(self, record: LogRecord):
         log: Log = Log(
             os=self.os,
-            severity=record.levelno,
+            severity=self.__map_severity(record.levelno),
             message=record.getMessage(),
-            timestamp=record.created,
+            timestamp=float(record.created),
             hostname=self.hostname,
             unit=self.app_name,
-            raw=record.__dict__,
-            type=LogType.LOGGER,
+            raw=json.dumps(record.__dict__),
+            type=LogType.LOGGER.value,
         )
 
         self.queue.push(log)
