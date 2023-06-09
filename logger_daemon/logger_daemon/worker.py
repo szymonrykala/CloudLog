@@ -66,13 +66,15 @@ class LogWorker(threading.Thread):
             if error:
                 raise Exception(f"Command error: {error}")
 
-            self._logger.info(output)
+            self._logger.debug(f"Gatehered output: {output}")
 
             for log in json.loads(output or "[]"):
                 try:
                     yield self.__LOG_CLASS.from_dict(log)
                 except Exception as exc:
                     self._logger.warning(f"Log record processing failed with error: {exc}")
+            self._logger.info("Logs has been retrived")
+
 
         except Exception as err:
             self._logger.warning("Getting logs failed")
@@ -83,6 +85,6 @@ class LogWorker(threading.Thread):
         while not self.stopped:
             logs = tuple(self.__get_logs())
             if logs:
-                self.__logs_queue.push(logs)
+                self.__logs_queue.push(*logs)
 
             time.sleep(self.interval)

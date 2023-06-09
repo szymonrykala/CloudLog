@@ -15,7 +15,7 @@ def __set_lvl(_logger=logger):
 
 
 def __set_format(_handler):
-    formatter = Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    formatter = Formatter("%(asctime)s - %(name)s - %(levelname)s -\t%(message)s")
     _handler.setFormatter(formatter)
 
 
