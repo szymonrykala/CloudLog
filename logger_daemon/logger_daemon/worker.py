@@ -15,14 +15,14 @@ class LogWorker(threading.Thread):
 
     def __init__(self, interval, logger=_logger):
         super().__init__()
-        
+
         self._logger = logger
         self.interval: int = interval
         self.stopped: bool = False
 
-        self.__LOG_CLASS, self.__CMD = self.__get_system_specific_config()
-        self._logger.info(f"Determined system specific config: {self.__LOG_CLASS}, {self.__CMD}")
-        
+        self.__LOG_CLASS, self.__CMD, self.__TEXT_ENCODING = self.__get_system_specific_config()
+        self._logger.info(f"Determined system specific config: {self.__LOG_CLASS}, {self.__CMD}, {self.__TEXT_ENCODING}")
+
 
     @classmethod
     def attach_queue(cls, queue: LogQueue):
@@ -41,14 +41,14 @@ class LogWorker(threading.Thread):
         return [
             "powershell",
             "-Command",
-            f"Get-WinEvent -FilterHashtable @{{logname='Application','System'; StartTime=(Get-Date).AddSeconds(-{self.interval})}} | ConvertTo-Json",
+            f"Get-WinEvent -FilterHashtable @{{logname='Application','System'; StartTime=(Get-Date).AddSeconds(-{self.interval})}} -ErrorAction SilentlyContinue | ConvertTo-Json",
         ]
 
     def __get_system_specific_config(self):
         if platform.system() == "Windows":
-            return WindowsLog, self.windows_cmd
+            return WindowsLog, self.windows_cmd, "cp852"
 
-        return LinuxLog, self.linux_cmd
+        return LinuxLog, self.linux_cmd, "utf-8"
 
     def stop(self):
         self._logger.info(f"Shutting down {self}")
@@ -60,15 +60,19 @@ class LogWorker(threading.Thread):
                 self.__CMD,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                encoding="utf8"
+                encoding=self.__TEXT_ENCODING
             )
-            output, error = process.communicate()           
+            output, error = process.communicate()
             if error:
                 raise Exception(f"Command error: {error}")
 
             self._logger.debug(f"Gatehered output: {output}")
 
-            for log in json.loads(output or "[]"):
+            logs = json.loads(output or "[]")
+            if isinstance(logs, dict):
+                logs = [logs]
+
+            for log in logs:
                 try:
                     yield self.__LOG_CLASS.from_dict(log)
                 except Exception as exc:

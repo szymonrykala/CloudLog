@@ -1,5 +1,6 @@
 import os
 import signal
+import time
 
 from worker import LogWorker
 
@@ -34,16 +35,23 @@ def cloudlog_daemon_factory():
 
 if __name__ == "__main__":
     daemon = cloudlog_daemon_factory()
+    stopped: bool = False
 
     def stop_handler(*_):
         global __sender
+        global stopped
         daemon.stop()
         __sender.stop()
-        
+        stopped = True
+
     signal.signal(
-        signal.SIGINT, 
+        signal.SIGINT,
         stop_handler
     ) #handling systemd signal
-        
+
     daemon.start()
-    daemon.join()
+
+    # On windows daemon.join() causes signals not to work
+    # We had to make a workaround to be able to stop the daemon
+    while not stopped:
+        time.sleep(1)

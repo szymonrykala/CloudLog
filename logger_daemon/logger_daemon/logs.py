@@ -19,7 +19,7 @@ class WindowsLog(Log):
             os=OS.WINDOWS.value,
             severity=int(log["Level"]),
             message=log["Message"],
-            timestamp=int(log["TimeCreated"]),
+            timestamp=int(log["TimeCreated"][6:-2])/1000, # Date comes in as "/Date(xxx)/"
             hostname=log["MachineName"],
             unit=log["ProviderName"],
             raw=json.dumps(log),
