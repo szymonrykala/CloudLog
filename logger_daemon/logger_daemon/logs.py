@@ -33,17 +33,18 @@ class LinuxLog(Log):
     @classmethod
     def from_dict(cls, log: dict):
         log_type = log_type = LogType.SYSTEM.value
-
-        if re.search(r"(snap)|(opt)", log["_EXE"]):
+        unit = log.get("_EXE") or log.get("_AUDIT_FIELD_PROFILE", "unknown")
+        
+        if re.search(r"(snap)|(opt)", unit):
             log_type = LogType.APP.value
 
         return cls(
             os=OS.LINUX.value,
-            severity=int(log["PRIORITY"]),
+            severity=int(log.get("PRIORITY") or log.get("SYSLOG_FACILITY", 5)),
             message=log["MESSAGE"],
             timestamp=int(log["__REALTIME_TIMESTAMP"]) / 1_000_000,
             hostname=log["_HOSTNAME"],
-            unit=log["_EXE"],
+            unit=unit,
             raw=json.dumps(log),
             type=log_type,
         )
