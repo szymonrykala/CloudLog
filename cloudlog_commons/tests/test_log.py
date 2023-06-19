@@ -1,10 +1,12 @@
-from dataclasses import asdict
-from decimal import Decimal
 import json
+from dataclasses import asdict
+
 import pytest
 
-from cloudlog_commons.log import DBLog, MockedLog, OS, LogType
-from cloudlog_commons.exceptions import LogEntryValidationError
+from cloudlog_commons.cloud import DBLog
+from cloudlog_commons.cloud.exceptions import LogEntryValidationError
+from cloudlog_commons.cloud.log import MockedLog
+from cloudlog_commons.shared import OS, LogType
 
 
 @pytest.mark.parametrize("data, success", (

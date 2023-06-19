@@ -1,6 +1,6 @@
 from dataclasses import asdict
 from datetime import datetime
-from cloudlog_commons.log import LogType
+from cloudlog_commons.shared import LogType
 import pytest
 
 from read_logs.request import FieldValueParser, RequestParams

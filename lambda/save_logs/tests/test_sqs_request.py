@@ -1,6 +1,6 @@
 from typing import Generator
 import pytest
-from cloudlog_commons import Log
+from cloudlog_commons.shared import Log
 from .utils import SQSRequestEventMock
 
 from save_logs.utils import SQSRequest, SQSResponse

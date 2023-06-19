@@ -1,10 +1,11 @@
+import json
 from dataclasses import asdict, dataclass
 from datetime import datetime
-import json
 from random import shuffle
 from typing import Any
 
-from cloudlog_commons.log import Log, MockedLog
+from cloudlog_commons.cloud.log import MockedLog
+from cloudlog_commons.shared import Log
 
 
 @dataclass

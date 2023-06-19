@@ -2,7 +2,7 @@ from dataclasses import asdict, dataclass, field
 from datetime import datetime, timedelta
 from typing import Optional
 
-from cloudlog_commons.log import LogType
+from cloudlog_commons.shared import LogType
 
 from .exceptions import BadRequestParameterValue
 
@@ -12,6 +12,7 @@ class RequestParams:
     unit: Optional[str] = None
     hostname: Optional[str] = None
     type: Optional[LogType] = None
+    limit: int = field(default=80)
     severity: int = field(default=0)
     toDate: datetime = field(default=datetime.utcnow() + timedelta(minutes=10))
     fromDate: datetime = field(default=toDate.default - timedelta(hours=1, minutes=10))
@@ -25,6 +26,7 @@ class RequestParams:
             "toDate": lambda f: parser.date(f),
             "type": lambda f: parser.log_type(f),
             "severity": lambda f: int(parser.params[f]),
+            "limit": lambda f: int(parser.params[f]),
         }
 
         values_generator = (

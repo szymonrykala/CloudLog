@@ -17,8 +17,13 @@ export default function ParameterPanel() {
         <Sheet
             sx={{
                 padding: 1,
-                gap: 3,
+                position: 'sticky',
+                top: 70,
+                zIndex:10,
+                borderBottom: '1px solid',
+                borderColor: 'divider',
                 display: 'flex',
+                gap: 3,
                 flexDirection: "column",
                 alignItems: 'flex-start',
                 bgcolor: 'background.componentBg',

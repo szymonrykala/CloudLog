@@ -1,15 +1,20 @@
 import os
 from concurrent.futures import ThreadPoolExecutor
 from typing import Union
+
 from botocore import exceptions
-from cloudlog_commons import DynamoTable, logger
+
+from cloudlog_commons.cloud import DynamoTable
+from cloudlog_commons.shared import logger
+
 from .utils import DynamoPutRequest, SQSRequest, SQSResponse
+
 
 DYNAMO_TABLE_NAME = os.environ["DYNAMO_TABLE_NAME"]
 dynamo = DynamoTable(DYNAMO_TABLE_NAME)
 
 
-def handler(event:dict, context:dict):
+def handler(event: dict, context: dict):
     response = SQSResponse()
     requests = tuple(SQSRequest.from_event_list(event["Records"]))
 
@@ -25,7 +30,7 @@ def handler(event:dict, context:dict):
     return response.emit()
 
 
-def message_async_handler(request: SQSRequest) -> Union[str,None]:
+def message_async_handler(request: SQSRequest) -> Union[str, None]:
     try:
         dynamo.execute(DynamoPutRequest(request.body))
         logger.info(f"Dynamo put request executed")

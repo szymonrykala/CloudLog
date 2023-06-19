@@ -14,7 +14,7 @@ export function useCloudLogGetLogs(params: GetLogsQueryParams) {
         try {
             const data = await CLService.getLogs(params)
 
-            setLogs(data)
+            setLogs(data.sort((a,b)=> b.timestamp - a.timestamp))
             setErr("")
         } catch (e: any) {
             console.error(e)

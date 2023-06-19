@@ -3,15 +3,7 @@ from typing import Generator, Union
 
 import boto3
 
-from .exceptions import CloudLogBaseException
-
-
-class DynamoRequestException(CloudLogBaseException):
-    statusCode:int = 400
-
-    def __init__(self, message):
-        self.message = f"Failed to execute dynamo request: {message}"
-    
+from .exceptions import DynamoRequestException
 
 
 class DynamoRequest(ABC):

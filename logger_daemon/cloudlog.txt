@@ -1,0 +1,16 @@
+[Unit]
+Description=CloudLog system daemon for gathering logs
+
+
+[Service]
+Type=simple
+User=__USER__
+Group=adm
+WorkingDirectory=/home/__USER__/cloudlog
+ExecStart=/home/__USER__/.local/bin/poetry run --directory /home/__USER__/cloudlog/runner/. python -m logger_daemon
+Restart=on-failure
+PIDFile=/tmp/cloudlog.pid
+
+
+[Install]
+WantedBy=multi-user.target

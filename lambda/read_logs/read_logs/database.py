@@ -1,6 +1,7 @@
 from decimal import Decimal
 
-from cloudlog_commons import DBLog, DynamoRequest, LogType, logger
+from cloudlog_commons.cloud import DBLog, DynamoRequest
+from cloudlog_commons.shared import LogType, logger
 
 from .request import RequestParams
 
@@ -43,7 +44,8 @@ class ReadRequest(DynamoRequest):
         response = table.scan(
             ExpressionAttributeNames=self.__att_names,
             ExpressionAttributeValues=self.__att_values,
-            FilterExpression=self.__exp
+            FilterExpression=self.__exp,
+            Limit=self.params.limit
         )
 
         return tuple(DBLog(**item) for item in response["Items"])

@@ -3,6 +3,7 @@
 data "external" "manage_proper_dir_structure_for_layer" {
   working_dir = local.lambda.common_layer.source
   program = ["sh", "-c", <<-EOF
+    rm -r python 2> /dev/null
     mkdir python
     cp -r ${local.lambda.common_layer.name} python/
 

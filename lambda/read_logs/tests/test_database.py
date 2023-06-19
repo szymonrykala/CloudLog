@@ -1,6 +1,6 @@
 import pytest
 from read_logs.database import ReadRequest
-from cloudlog_commons.database import DynamoTable
+from cloudlog_commons.cloud import DynamoTable
 from read_logs.request import RequestParams
 
 
