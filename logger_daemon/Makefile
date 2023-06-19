@@ -53,7 +53,7 @@ build_package: __tests
 		mkdir $(DIST_DIR)/logs;\
 	fi;\
 
-	sudo find /home/szymon/cloudlog/ -name "*.whl" -type f -delete; 
+	sudo find $$HOME/cloudlog/ -name "*.whl" -type f -delete; 
 	
 	@cp -r ./dist/. $(DIST_DIR);
 
